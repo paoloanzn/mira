@@ -1,6 +1,6 @@
-import fs from 'fs/promises';
-import path from 'path';
-import dotenv from 'dotenv';
+import fs from "fs/promises";
+import path from "path";
+import dotenv from "dotenv";
 
 /**
  * Updates a single environment variable in the .env file
@@ -12,24 +12,24 @@ export async function updateEnvVariable(key, value) {
   try {
     // Find the .env file by walking up the directory tree
     const envPath = await findEnvFile();
-    
+
     // Read current .env content
-    const currentContent = await fs.readFile(envPath, 'utf-8');
-    
+    const currentContent = await fs.readFile(envPath, "utf-8");
+
     // Parse current content into an object
     const envConfig = dotenv.parse(currentContent);
-    
+
     // Update the value
     envConfig[key] = value;
-    
+
     // Convert back to .env format
     const newContent = Object.entries(envConfig)
       .map(([k, v]) => `${k}=${formatEnvValue(v)}`)
-      .join('\n');
-    
+      .join("\n");
+
     // Write back to file
     await fs.writeFile(envPath, newContent);
-    
+
     // Update process.env
     process.env[key] = value;
   } catch (error) {
@@ -44,7 +44,7 @@ export async function updateEnvVariable(key, value) {
  * @returns {string} Formatted value
  */
 function formatEnvValue(value) {
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     // Check if value contains spaces or special characters
     if (/[\s"'`]/.test(value)) {
       // Escape quotes in the value and wrap in double quotes
@@ -52,7 +52,7 @@ function formatEnvValue(value) {
     }
     return value;
   }
-  if (typeof value === 'object') {
+  if (typeof value === "object") {
     return `"${JSON.stringify(value).replace(/"/g, '\\"')}"`;
   }
   return String(value);
@@ -69,7 +69,7 @@ async function findEnvFile() {
   const root = path.parse(currentDir).root;
 
   while (currentDir !== root) {
-    const envPath = path.join(currentDir, '.env');
+    const envPath = path.join(currentDir, ".env");
     try {
       await fs.access(envPath);
       return envPath;
@@ -77,6 +77,6 @@ async function findEnvFile() {
       currentDir = path.dirname(currentDir);
     }
   }
-  
-  throw new Error('.env file not found in directory tree');
-} 
+
+  throw new Error(".env file not found in directory tree");
+}

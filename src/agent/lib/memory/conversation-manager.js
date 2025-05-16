@@ -24,7 +24,10 @@ class ConversationManager {
       }
 
       // Create new conversation with user and agent
-      const { data, error } = await this.memoryClient.createConversation([userId, agentUserId]);
+      const { data, error } = await this.memoryClient.createConversation([
+        userId,
+        agentUserId,
+      ]);
       if (error) {
         throw error;
       }
@@ -44,7 +47,8 @@ class ConversationManager {
    */
   async getMessages(conversationId) {
     try {
-      const { data, error } = await this.memoryClient.getMessages(conversationId);
+      const { data, error } =
+        await this.memoryClient.getMessages(conversationId);
       if (error) {
         throw error;
       }
@@ -66,7 +70,7 @@ class ConversationManager {
       const { data, error } = await this.memoryClient.createMessage(
         conversationId,
         userId,
-        content
+        content,
       );
       if (error) {
         throw error;
@@ -106,4 +110,4 @@ export function getConversationManager() {
     manager = new ConversationManager();
   }
   return manager;
-} 
+}

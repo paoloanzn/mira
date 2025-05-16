@@ -9,7 +9,7 @@
 export class AIGenerationError extends Error {
   constructor(message, type, originalError = null) {
     super(message);
-    this.name = 'AIGenerationError';
+    this.name = "AIGenerationError";
     this.type = type;
     this.originalError = originalError;
   }
@@ -21,10 +21,10 @@ export class AIGenerationError extends Error {
  * @enum {string}
  */
 export const ErrorType = Object.freeze({
-  TOOL_EXECUTION: 'tool_execution',
-  STREAM_GENERATION: 'stream_generation',
-  API_ERROR: 'api_error',
-  VALIDATION: 'validation',
+  TOOL_EXECUTION: "tool_execution",
+  STREAM_GENERATION: "stream_generation",
+  API_ERROR: "api_error",
+  VALIDATION: "validation",
 });
 
 /**
@@ -56,7 +56,7 @@ export const defaultRetryConfig = Object.freeze({
 function calculateBackoff(attempt, baseDelay, maxDelay) {
   const delay = Math.min(
     maxDelay,
-    baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000
+    baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000,
   );
   return delay;
 }
@@ -70,17 +70,21 @@ function calculateBackoff(attempt, baseDelay, maxDelay) {
 function isRetryableError(error) {
   // Network errors, rate limits, and temporary service issues are retryable
   if (error instanceof AIGenerationError) {
-    return error.type === ErrorType.API_ERROR || 
-           error.type === ErrorType.STREAM_GENERATION;
+    return (
+      error.type === ErrorType.API_ERROR ||
+      error.type === ErrorType.STREAM_GENERATION
+    );
   }
-  
+
   // Check for common network error patterns
-  return error.message.includes('ECONNRESET') ||
-         error.message.includes('ETIMEDOUT') ||
-         error.message.includes('rate limit') ||
-         error.message.toLowerCase().includes('timeout') ||
-         error.message.includes('503') ||
-         error.message.includes('429');
+  return (
+    error.message.includes("ECONNRESET") ||
+    error.message.includes("ETIMEDOUT") ||
+    error.message.includes("rate limit") ||
+    error.message.toLowerCase().includes("timeout") ||
+    error.message.includes("503") ||
+    error.message.includes("429")
+  );
 }
 
 /**
@@ -94,26 +98,26 @@ function isRetryableError(error) {
  */
 export async function withRetries(fn, config = defaultRetryConfig) {
   let lastError = null;
-  
+
   for (let attempt = 1; attempt <= config.maxRetries; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error;
-      
+
       if (!isRetryableError(error) || attempt === config.maxRetries) {
         throw error;
       }
-      
+
       const delay = calculateBackoff(
         attempt,
         config.baseDelay,
-        config.maxDelay
+        config.maxDelay,
       );
-      
-      await new Promise(resolve => setTimeout(resolve, delay));
+
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
-  
+
   throw lastError;
-} 
+}

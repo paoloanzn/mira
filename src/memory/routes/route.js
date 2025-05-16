@@ -26,25 +26,27 @@ class Route {
    * @param {Function} routes[].handler - Route handler function
    */
   addRoutes(...routes) {
-    routes.forEach(({ method, url, schema, description, preHandler, handler }) => {
-      const fullUrl = path.join(this.rootUrl, url);
-      const route = { 
-        method, 
-        url: fullUrl, 
-        handler,
-        schema: schema || {},
-      };
+    routes.forEach(
+      ({ method, url, schema, description, preHandler, handler }) => {
+        const fullUrl = path.join(this.rootUrl, url);
+        const route = {
+          method,
+          url: fullUrl,
+          handler,
+          schema: schema || {},
+        };
 
-      if (description) {
-        route.schema.description = description;
-      }
+        if (description) {
+          route.schema.description = description;
+        }
 
-      if (preHandler) {
-        route.preHandler = preHandler;
-      }
+        if (preHandler) {
+          route.preHandler = preHandler;
+        }
 
-      this.routes.push(route);
-    });
+        this.routes.push(route);
+      },
+    );
   }
 
   /**
@@ -60,26 +62,29 @@ class Route {
    * @returns {Object} OpenAPI schema object
    */
   generateSchema() {
-    return this.routes.reduce((schema, route) => {
-      const pathKey = route.url.replace(/\/:([^/]+)/g, "/{$1}"); // Convert :param to {param} format
-      
-      schema.paths[pathKey] = schema.paths[pathKey] || {};
-      schema.paths[pathKey][route.method.toLowerCase()] = {
-        description: route.schema.description || "",
-        parameters: this._extractParameters(route),
-        requestBody: this._extractRequestBody(route),
-        responses: this._extractResponses(route)
-      };
+    return this.routes.reduce(
+      (schema, route) => {
+        const pathKey = route.url.replace(/\/:([^/]+)/g, "/{$1}"); // Convert :param to {param} format
 
-      return schema;
-    }, {
-      openapi: "3.0.0",
-      info: {
-        title: "Memory Service API",
-        version: "1.0.0"
+        schema.paths[pathKey] = schema.paths[pathKey] || {};
+        schema.paths[pathKey][route.method.toLowerCase()] = {
+          description: route.schema.description || "",
+          parameters: this._extractParameters(route),
+          requestBody: this._extractRequestBody(route),
+          responses: this._extractResponses(route),
+        };
+
+        return schema;
       },
-      paths: {}
-    });
+      {
+        openapi: "3.0.0",
+        info: {
+          title: "Memory Service API",
+          version: "1.0.0",
+        },
+        paths: {},
+      },
+    );
   }
 
   /**
@@ -90,29 +95,33 @@ class Route {
    */
   _extractParameters(route) {
     const params = [];
-    
+
     // URL parameters
     if (route.schema.params) {
-      Object.entries(route.schema.params.properties || {}).forEach(([name, schema]) => {
-        params.push({
-          name,
-          in: "path",
-          required: true,
-          schema
-        });
-      });
+      Object.entries(route.schema.params.properties || {}).forEach(
+        ([name, schema]) => {
+          params.push({
+            name,
+            in: "path",
+            required: true,
+            schema,
+          });
+        },
+      );
     }
 
     // Query parameters
     if (route.schema.querystring) {
-      Object.entries(route.schema.querystring.properties || {}).forEach(([name, schema]) => {
-        params.push({
-          name,
-          in: "query",
-          required: (route.schema.querystring.required || []).includes(name),
-          schema
-        });
-      });
+      Object.entries(route.schema.querystring.properties || {}).forEach(
+        ([name, schema]) => {
+          params.push({
+            name,
+            in: "query",
+            required: (route.schema.querystring.required || []).includes(name),
+            schema,
+          });
+        },
+      );
     }
 
     return params;
@@ -131,9 +140,9 @@ class Route {
       required: true,
       content: {
         "application/json": {
-          schema: route.schema.body
-        }
-      }
+          schema: route.schema.body,
+        },
+      },
     };
   }
 
@@ -145,10 +154,10 @@ class Route {
    */
   _extractResponses(route) {
     const responses = {
-      "200": {
+      200: {
         description: "Successful response",
-        content: {}
-      }
+        content: {},
+      },
     };
 
     if (route.schema.response) {
@@ -157,9 +166,9 @@ class Route {
           description: schema.description || "Response",
           content: {
             "application/json": {
-              schema
-            }
-          }
+              schema,
+            },
+          },
         };
       });
     }
@@ -176,4 +185,4 @@ class Route {
   }
 }
 
-export default Route; 
+export default Route;

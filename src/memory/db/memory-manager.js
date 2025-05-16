@@ -44,20 +44,26 @@ class MemoryManager extends Database {
       // Create conversation
       const createConvSql = await this.loadQuery("create_conversation.sql");
       if (!createConvSql) {
-        throw new Error("Query not authorized or not found: create_conversation.sql");
+        throw new Error(
+          "Query not authorized or not found: create_conversation.sql",
+        );
       }
-      const { rows: [conversation] } = await client.query(createConvSql);
+      const {
+        rows: [conversation],
+      } = await client.query(createConvSql);
 
       // Add users to conversation
       const addUserSql = await this.loadQuery("add_user_to_conversation.sql");
       if (!addUserSql) {
-        throw new Error("Query not authorized or not found: add_user_to_conversation.sql");
+        throw new Error(
+          "Query not authorized or not found: add_user_to_conversation.sql",
+        );
       }
 
       await Promise.all(
-        userIds.map(userId =>
-          client.query(addUserSql, [conversation.id, userId])
-        )
+        userIds.map((userId) =>
+          client.query(addUserSql, [conversation.id, userId]),
+        ),
       );
 
       return conversation;
@@ -105,7 +111,9 @@ class MemoryManager extends Database {
   async getMessagesByEmbedding(embedding, conversationId, limit = 5) {
     const sql = await this.loadQuery("get_messages_by_embedding.sql");
     if (!sql) {
-      throw new Error("Query not authorized or not found: get_messages_by_embedding.sql");
+      throw new Error(
+        "Query not authorized or not found: get_messages_by_embedding.sql",
+      );
     }
     return this.query(sql, [embedding, conversationId, limit]);
   }
@@ -120,10 +128,12 @@ class MemoryManager extends Database {
   async updateMessageEmbedding(messageId, embedding) {
     const sql = await this.loadQuery("update_message_embedding.sql");
     if (!sql) {
-      throw new Error("Query not authorized or not found: update_message_embedding.sql");
+      throw new Error(
+        "Query not authorized or not found: update_message_embedding.sql",
+      );
     }
     return this.query(sql, [embedding, messageId]);
   }
 }
 
-export default MemoryManager; 
+export default MemoryManager;

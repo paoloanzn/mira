@@ -9,7 +9,9 @@ class MemoryClient {
    * Creates a new MemoryClient instance.
    * @param {string} baseUrl - Base URL of the memory service
    */
-  constructor(baseUrl = process.env.MEMORY_SERVICE_URL || "http://localhost:8081") {
+  constructor(
+    baseUrl = process.env.MEMORY_SERVICE_URL || "http://localhost:8081",
+  ) {
     this.baseUrl = baseUrl;
   }
 
@@ -23,40 +25,57 @@ class MemoryClient {
    */
   async _request(endpoint, method, body = null) {
     const requestId = Math.random().toString(36).substring(7);
-    console.log(`[${new Date().toISOString()}] [Request ${requestId}] Sending request:`);
+    console.log(
+      `[${new Date().toISOString()}] [Request ${requestId}] Sending request:`,
+    );
     console.log(`URL: ${this.baseUrl}/memory${endpoint}`);
     console.log(`Method: ${method}`);
-    console.log('Body:', body);
+    console.log("Body:", body);
 
     try {
       const response = await fetch(`${this.baseUrl}/memory${endpoint}`, {
         method,
         headers: {
           "Content-Type": "application/json",
-          "Origin": "http://agent-service"
+          Origin: "http://agent-service",
         },
         body: body ? JSON.stringify(body) : null,
       });
 
-      console.log(`[${new Date().toISOString()}] [Request ${requestId}] Received response:`);
+      console.log(
+        `[${new Date().toISOString()}] [Request ${requestId}] Received response:`,
+      );
       console.log(`Status: ${response.status}`);
-      
+
       if (!response.ok) {
         const error = await response.json();
-        console.error(`[${new Date().toISOString()}] [Request ${requestId}] Error response:`, error);
-        throw new Error(error.error || `Request failed with status ${response.status}`);
+        console.error(
+          `[${new Date().toISOString()}] [Request ${requestId}] Error response:`,
+          error,
+        );
+        throw new Error(
+          error.error || `Request failed with status ${response.status}`,
+        );
       }
 
       if (response.status === 204) {
-        console.log(`[${new Date().toISOString()}] [Request ${requestId}] No content response`);
+        console.log(
+          `[${new Date().toISOString()}] [Request ${requestId}] No content response`,
+        );
         return { data: null, error: null };
       }
 
       const data = await response.json();
-      console.log(`[${new Date().toISOString()}] [Request ${requestId}] Success response:`, data);
+      console.log(
+        `[${new Date().toISOString()}] [Request ${requestId}] Success response:`,
+        data,
+      );
       return { data, error: null };
     } catch (error) {
-      console.error(`[${new Date().toISOString()}] [Request ${requestId}] Request failed:`, error);
+      console.error(
+        `[${new Date().toISOString()}] [Request ${requestId}] Request failed:`,
+        error,
+      );
       return { data: null, error };
     }
   }
@@ -95,11 +114,10 @@ class MemoryClient {
    * @returns {Promise<{data: {id: string}|null, error: Error|null}>}
    */
   async createMessage(conversationId, userId, content) {
-    return this._request(
-      `/conversations/${conversationId}/messages`,
-      "POST",
-      { userId, content }
-    );
+    return this._request(`/conversations/${conversationId}/messages`, "POST", {
+      userId,
+      content,
+    });
   }
 
   /**
@@ -124,4 +142,4 @@ export function getMemoryClient() {
     client = new MemoryClient();
   }
   return client;
-} 
+}

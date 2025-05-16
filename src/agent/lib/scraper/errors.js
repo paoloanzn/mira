@@ -3,7 +3,7 @@
  * Provides error handling for scraper operations.
  */
 
-import { ErrorType } from '../ai/errors.js';
+import { ErrorType } from "../ai/errors.js";
 
 /**
  * Custom error class for scraper operations
@@ -11,7 +11,7 @@ import { ErrorType } from '../ai/errors.js';
 export class ScraperError extends Error {
   constructor(message, type, originalError = null) {
     super(message);
-    this.name = 'ScraperError';
+    this.name = "ScraperError";
     this.type = type;
     this.originalError = originalError;
   }
@@ -24,10 +24,10 @@ export class ScraperError extends Error {
  */
 export const ScraperErrorType = Object.freeze({
   ...ErrorType,
-  AUTHENTICATION: 'authentication',
-  COOKIE_VALIDATION: 'cookie_validation',
-  CREDENTIALS: 'credentials',
-  SESSION: 'session',
+  AUTHENTICATION: "authentication",
+  COOKIE_VALIDATION: "cookie_validation",
+  CREDENTIALS: "credentials",
+  SESSION: "session",
 });
 
 /**
@@ -36,7 +36,7 @@ export const ScraperErrorType = Object.freeze({
 export class ScraperAuthenticationError extends ScraperError {
   constructor(message, originalError = null) {
     super(message, ScraperErrorType.AUTHENTICATION, originalError);
-    this.name = 'ScraperAuthenticationError';
+    this.name = "ScraperAuthenticationError";
   }
 }
 
@@ -46,7 +46,7 @@ export class ScraperAuthenticationError extends ScraperError {
 export class ScraperCredentialsError extends ScraperError {
   constructor(message, originalError = null) {
     super(message, ScraperErrorType.CREDENTIALS, originalError);
-    this.name = 'ScraperCredentialsError';
+    this.name = "ScraperCredentialsError";
   }
 }
 
@@ -56,7 +56,7 @@ export class ScraperCredentialsError extends ScraperError {
 export class ScraperCookieError extends ScraperError {
   constructor(message, originalError = null) {
     super(message, ScraperErrorType.COOKIE_VALIDATION, originalError);
-    this.name = 'ScraperCookieError';
+    this.name = "ScraperCookieError";
   }
 }
 
@@ -66,6 +66,6 @@ export class ScraperCookieError extends ScraperError {
 export class ScraperSessionError extends ScraperError {
   constructor(message, originalError = null) {
     super(message, ScraperErrorType.SESSION, originalError);
-    this.name = 'ScraperSessionError';
+    this.name = "ScraperSessionError";
   }
-} 
+}

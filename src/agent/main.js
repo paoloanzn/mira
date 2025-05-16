@@ -18,7 +18,8 @@ export async function startAgent() {
 
     // 3. Register agent in memory service if not already registered
     const userManager = getUserManager();
-    const { userId: agentUserId, error: userError } = await userManager.getOrCreateAgentUser();
+    const { userId: agentUserId, error: userError } =
+      await userManager.getOrCreateAgentUser();
     if (userError) {
       throw new Error(`Failed to get/create agent user: ${userError.message}`);
     }
@@ -32,6 +33,5 @@ export async function startAgent() {
     process.exit(1);
   }
 }
-
 
 startAgent();

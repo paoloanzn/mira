@@ -54,29 +54,36 @@ export async function startServer(agentUserId) {
 
     try {
       // Get or create user for this hostname
-      const { userId, error: userError } = await userManager.getOrCreateUser(hostname);
+      const { userId, error: userError } =
+        await userManager.getOrCreateUser(hostname);
       if (userError) {
         throw new Error(`Failed to get/create user: ${userError.message}`);
       }
 
       // Get or create conversation for this user
-      const { conversationId, error: convError } = 
+      const { conversationId, error: convError } =
         await conversationManager.getOrCreateConversation(userId, agentUserId);
       if (convError) {
-        throw new Error(`Failed to get/create conversation: ${convError.message}`);
+        throw new Error(
+          `Failed to get/create conversation: ${convError.message}`,
+        );
       }
 
       // Add user message
       await conversationManager.addMessage(conversationId, userId, content);
 
       // Get conversation history
-      const { messages, error: msgError } = await conversationManager.getMessages(conversationId);
+      const { messages, error: msgError } =
+        await conversationManager.getMessages(conversationId);
       if (msgError) {
         throw new Error(`Failed to get messages: ${msgError.message}`);
       }
 
       // Format conversation for template
-      const formattedConversation = conversationManager.formatConversation(messages, agentUserId);
+      const formattedConversation = conversationManager.formatConversation(
+        messages,
+        agentUserId,
+      );
 
       // Compile template with conversation
       const { template, error: templateError } = compileTemplate(chatTemplate, {
@@ -94,10 +101,12 @@ export async function startServer(agentUserId) {
         ModelProvider.OPENAI,
         (textPart) => {
           aiResponse += textPart;
-          responseStream.write(`data: ${JSON.stringify({ text: textPart })}\n\n`);
+          responseStream.write(
+            `data: ${JSON.stringify({ text: textPart })}\n\n`,
+          );
         },
         ModelType.MEDIUM,
-        tools
+        tools,
       );
 
       if (generateError) {
@@ -105,16 +114,19 @@ export async function startServer(agentUserId) {
       }
 
       // Save AI response
-      await conversationManager.addMessage(conversationId, agentUserId, aiResponse.trim());
-      console.log("STEPS:", JSON.stringify(steps, null, 2))
-
+      await conversationManager.addMessage(
+        conversationId,
+        agentUserId,
+        aiResponse.trim(),
+      );
+      console.log("STEPS:", JSON.stringify(steps, null, 2));
     } catch (error) {
       console.error("Error processing message:", error);
       if (!responseStream.writableEnded) {
         responseStream.write(
           `event: error\ndata: ${JSON.stringify({
             message: "Internal server error",
-          })}\n\n`
+          })}\n\n`,
         );
       }
     } finally {
@@ -127,10 +139,10 @@ export async function startServer(agentUserId) {
   try {
     await fastify.listen(serverConfig);
     console.log(
-      `Agent API server running on ${JSON.stringify(fastify.server.address())}`
+      `Agent API server running on ${JSON.stringify(fastify.server.address())}`,
     );
   } catch (error) {
     console.error("Failed to start server:", error);
     throw error;
   }
-} 
+}

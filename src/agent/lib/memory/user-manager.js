@@ -56,7 +56,7 @@ class UserManager {
       }
 
       agentUserId = data.id;
-      
+
       return { userId: agentUserId, error: null };
     } catch (error) {
       return { userId: null, error };
@@ -93,4 +93,4 @@ export function getUserManager() {
     manager = new UserManager();
   }
   return manager;
-} 
+}

@@ -35,4 +35,4 @@ You have access to various Twitter tools that allow you to:
 
 # IMPORTANT:
 OUTPUT ONLY THE NEXT MESSAGE IN PLAIN TEXT, nothing else.
-`; 
+`;

@@ -1,5 +1,5 @@
-import { execSync } from 'child_process';
-import chalk from 'chalk';
+import { execSync } from "child_process";
+import chalk from "chalk";
 
 /**
  * @typedef {Object} ServiceStatus
@@ -19,14 +19,16 @@ export class StatusChecker {
    */
   async getServicesStatus() {
     try {
-      const output = execSync('docker-compose ps --format json', { encoding: 'utf-8' });
-      const services = JSON.parse(`[${output.trim().split('\n').join(',')}]`);
-      
-      return services.map(service => ({
+      const output = execSync("docker-compose ps --format json", {
+        encoding: "utf-8",
+      });
+      const services = JSON.parse(`[${output.trim().split("\n").join(",")}]`);
+
+      return services.map((service) => ({
         name: service.Service,
-        isRunning: service.State === 'running',
+        isRunning: service.State === "running",
         state: service.State,
-        ports: service.Ports
+        ports: service.Ports,
       }));
     } catch (error) {
       throw new Error(`Failed to get services status: ${error.message}`);
@@ -40,22 +42,22 @@ export class StatusChecker {
    */
   formatStatusOutput(services) {
     const lines = [];
-    const maxNameLength = Math.max(...services.map(s => s.name.length));
+    const maxNameLength = Math.max(...services.map((s) => s.name.length));
 
-    lines.push(chalk.bold('\nMira Agent Services Status:'));
-    lines.push(chalk.dim('─'.repeat(50)));
+    lines.push(chalk.bold("\nMira Agent Services Status:"));
+    lines.push(chalk.dim("─".repeat(50)));
 
     for (const service of services) {
       const paddedName = service.name.padEnd(maxNameLength);
       const status = service.isRunning
-        ? chalk.green('● running')
-        : chalk.red('○ stopped');
-      
-      const ports = service.ports ? chalk.dim(` (${service.ports})`) : '';
+        ? chalk.green("● running")
+        : chalk.red("○ stopped");
+
+      const ports = service.ports ? chalk.dim(` (${service.ports})`) : "";
       lines.push(`${chalk.blue(paddedName)} ${status}${ports}`);
     }
 
-    lines.push(chalk.dim('─'.repeat(50)));
+    lines.push(chalk.dim("─".repeat(50)));
     return lines;
   }
 
@@ -66,12 +68,12 @@ export class StatusChecker {
    */
   checkAllServicesRunning(services) {
     const notRunning = services
-      .filter(service => !service.isRunning)
-      .map(service => service.name);
+      .filter((service) => !service.isRunning)
+      .map((service) => service.name);
 
     return {
       allRunning: notRunning.length === 0 && services.length != 0,
-      notRunning
+      notRunning,
     };
   }
-} 
+}

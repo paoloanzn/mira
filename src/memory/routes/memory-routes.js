@@ -14,10 +14,10 @@ const routes = [
         200: {
           type: "object",
           properties: {
-            id: { type: "string", format: "uuid" }
-          }
-        }
-      }
+            id: { type: "string", format: "uuid" },
+          },
+        },
+      },
     },
     handler: async (request, reply) => {
       const { data, error } = await memoryManager.createUser();
@@ -26,7 +26,7 @@ const routes = [
         return;
       }
       reply.send(data[0]);
-    }
+    },
   },
   {
     method: "GET",
@@ -36,9 +36,9 @@ const routes = [
       params: {
         type: "object",
         properties: {
-          userId: { type: "string", format: "uuid" }
+          userId: { type: "string", format: "uuid" },
         },
-        required: ["userId"]
+        required: ["userId"],
       },
       response: {
         200: {
@@ -46,10 +46,10 @@ const routes = [
           properties: {
             id: { type: "string", format: "uuid" },
             created_at: { type: "string", format: "date-time" },
-            updated_at: { type: "string", format: "date-time" }
-          }
-        }
-      }
+            updated_at: { type: "string", format: "date-time" },
+          },
+        },
+      },
     },
     handler: async (request, reply) => {
       const { userId } = request.params;
@@ -63,7 +63,7 @@ const routes = [
         return;
       }
       reply.send(data[0]);
-    }
+    },
   },
   {
     method: "POST",
@@ -76,19 +76,19 @@ const routes = [
           userIds: {
             type: "array",
             items: { type: "string", format: "uuid" },
-            minItems: 1
-          }
+            minItems: 1,
+          },
         },
-        required: ["userIds"]
+        required: ["userIds"],
       },
       response: {
         200: {
           type: "object",
           properties: {
-            id: { type: "string", format: "uuid" }
-          }
-        }
-      }
+            id: { type: "string", format: "uuid" },
+          },
+        },
+      },
     },
     handler: async (request, reply) => {
       const { userIds } = request.body;
@@ -98,7 +98,7 @@ const routes = [
         return;
       }
       reply.send(data);
-    }
+    },
   },
   {
     method: "POST",
@@ -108,37 +108,41 @@ const routes = [
       params: {
         type: "object",
         properties: {
-          conversationId: { type: "string", format: "uuid" }
+          conversationId: { type: "string", format: "uuid" },
         },
-        required: ["conversationId"]
+        required: ["conversationId"],
       },
       body: {
         type: "object",
         properties: {
           userId: { type: "string", format: "uuid" },
-          content: { type: "string", minLength: 1 }
+          content: { type: "string", minLength: 1 },
         },
-        required: ["userId", "content"]
+        required: ["userId", "content"],
       },
       response: {
         200: {
           type: "object",
           properties: {
-            id: { type: "string", format: "uuid" }
-          }
-        }
-      }
+            id: { type: "string", format: "uuid" },
+          },
+        },
+      },
     },
     handler: async (request, reply) => {
       const { conversationId } = request.params;
       const { userId, content } = request.body;
-      const { data, error } = await memoryManager.createMessage(conversationId, userId, content);
+      const { data, error } = await memoryManager.createMessage(
+        conversationId,
+        userId,
+        content,
+      );
       if (error) {
         reply.status(500).send({ error: error.message });
         return;
       }
       reply.send(data[0]);
-    }
+    },
   },
   {
     method: "GET",
@@ -148,9 +152,9 @@ const routes = [
       params: {
         type: "object",
         properties: {
-          conversationId: { type: "string", format: "uuid" }
+          conversationId: { type: "string", format: "uuid" },
         },
-        required: ["conversationId"]
+        required: ["conversationId"],
       },
       response: {
         200: {
@@ -165,12 +169,12 @@ const routes = [
               embedding: {
                 type: "array",
                 items: { type: "number" },
-                nullable: true
-              }
-            }
-          }
-        }
-      }
+                nullable: true,
+              },
+            },
+          },
+        },
+      },
     },
     handler: async (request, reply) => {
       const { conversationId } = request.params;
@@ -180,7 +184,7 @@ const routes = [
         return;
       }
       reply.send(data);
-    }
+    },
   },
   {
     method: "POST",
@@ -190,15 +194,15 @@ const routes = [
       params: {
         type: "object",
         properties: {
-          conversationId: { type: "string", format: "uuid" }
+          conversationId: { type: "string", format: "uuid" },
         },
-        required: ["conversationId"]
+        required: ["conversationId"],
       },
       querystring: {
         type: "object",
         properties: {
-          limit: { type: "integer", minimum: 1, maximum: 100, default: 5 }
-        }
+          limit: { type: "integer", minimum: 1, maximum: 100, default: 5 },
+        },
       },
       body: {
         type: "object",
@@ -207,10 +211,10 @@ const routes = [
             type: "array",
             items: { type: "number" },
             minItems: 1536,
-            maxItems: 1536
-          }
+            maxItems: 1536,
+          },
         },
-        required: ["embedding"]
+        required: ["embedding"],
       },
       response: {
         200: {
@@ -222,23 +226,27 @@ const routes = [
               content: { type: "string" },
               user_id: { type: "string", format: "uuid" },
               similarity: { type: "number" },
-              created_at: { type: "string", format: "date-time" }
-            }
-          }
-        }
-      }
+              created_at: { type: "string", format: "date-time" },
+            },
+          },
+        },
+      },
     },
     handler: async (request, reply) => {
       const { conversationId } = request.params;
       const { limit = 5 } = request.query;
       const { embedding } = request.body;
-      const { data, error } = await memoryManager.getMessagesByEmbedding(embedding, conversationId, limit);
+      const { data, error } = await memoryManager.getMessagesByEmbedding(
+        embedding,
+        conversationId,
+        limit,
+      );
       if (error) {
         reply.status(500).send({ error: error.message });
         return;
       }
       reply.send(data);
-    }
+    },
   },
   {
     method: "PUT",
@@ -248,9 +256,9 @@ const routes = [
       params: {
         type: "object",
         properties: {
-          messageId: { type: "string", format: "uuid" }
+          messageId: { type: "string", format: "uuid" },
         },
-        required: ["messageId"]
+        required: ["messageId"],
       },
       body: {
         type: "object",
@@ -259,25 +267,28 @@ const routes = [
             type: "array",
             items: { type: "number" },
             minItems: 1536,
-            maxItems: 1536
-          }
+            maxItems: 1536,
+          },
         },
-        required: ["embedding"]
-      }
+        required: ["embedding"],
+      },
     },
     handler: async (request, reply) => {
       const { messageId } = request.params;
       const { embedding } = request.body;
-      const { error } = await memoryManager.updateMessageEmbedding(messageId, embedding);
+      const { error } = await memoryManager.updateMessageEmbedding(
+        messageId,
+        embedding,
+      );
       if (error) {
         reply.status(500).send({ error: error.message });
         return;
       }
       reply.status(204).send();
-    }
-  }
+    },
+  },
 ];
 
 memoryRoute.addRoutes(...routes);
 
-export default memoryRoute; 
+export default memoryRoute;

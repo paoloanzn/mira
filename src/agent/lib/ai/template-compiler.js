@@ -26,4 +26,4 @@ export function compileTemplate(template, data) {
   });
 
   return { template: compiledTemplate, error: null };
-} 
+}

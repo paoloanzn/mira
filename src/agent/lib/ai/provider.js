@@ -87,7 +87,7 @@ async function handleTextStream(textStream, streamCallback = null) {
     throw new AIGenerationError(
       "Error during text stream processing",
       ErrorType.STREAM_GENERATION,
-      error
+      error,
     );
   }
 }
@@ -119,7 +119,7 @@ export async function generateText(
       if (!apiKey) {
         throw new AIGenerationError(
           "OPENAI_API_KEY not found",
-          ErrorType.VALIDATION
+          ErrorType.VALIDATION,
         );
       }
 
@@ -151,7 +151,7 @@ export async function generateText(
             throw new AIGenerationError(
               `API error: ${error.message}`,
               ErrorType.API_ERROR,
-              error
+              error,
             );
           }
 
@@ -160,7 +160,7 @@ export async function generateText(
             throw new AIGenerationError(
               `Tool execution failed: ${error.message}`,
               ErrorType.TOOL_EXECUTION,
-              error
+              error,
             );
           }
 
@@ -168,7 +168,7 @@ export async function generateText(
           throw new AIGenerationError(
             `Unexpected error: ${error.message}`,
             ErrorType.API_ERROR,
-            error
+            error,
           );
         }
       });
@@ -177,7 +177,7 @@ export async function generateText(
     default:
       throw new AIGenerationError(
         `Provider ${provider} not supported`,
-        ErrorType.VALIDATION
+        ErrorType.VALIDATION,
       );
   }
 }

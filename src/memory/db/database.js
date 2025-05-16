@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-dotenv.config()
+dotenv.config();
 
 /**
  * Class representing a database connection manager.
@@ -37,7 +37,7 @@ class Database {
           "create_message.sql",
           "get_messages.sql",
           "get_messages_by_embedding.sql",
-          "update_message_embedding.sql"
+          "update_message_embedding.sql",
         ],
       });
     }
@@ -52,32 +52,42 @@ class Database {
    */
   async query(sql, params = []) {
     const queryId = Math.random().toString(36).substring(7);
-    console.log(`[${new Date().toISOString()}] [Query ${queryId}] Executing SQL:`);
-    console.log('SQL:', sql);
-    console.log('Parameters:', params);
+    console.log(
+      `[${new Date().toISOString()}] [Query ${queryId}] Executing SQL:`,
+    );
+    console.log("SQL:", sql);
+    console.log("Parameters:", params);
 
     let client = null;
     try {
       client = await this.pool.connect();
       const result = await client.query(sql, params);
-      console.log(`[${new Date().toISOString()}] [Query ${queryId}] Query successful:`, {
-        rowCount: result.rowCount,
-        command: result.command,
-        resultData: result.rows
-      });
+      console.log(
+        `[${new Date().toISOString()}] [Query ${queryId}] Query successful:`,
+        {
+          rowCount: result.rowCount,
+          command: result.command,
+          resultData: result.rows,
+        },
+      );
       return { data: result.rows, error: null };
     } catch (error) {
-      console.error(`[${new Date().toISOString()}] [Query ${queryId}] Query failed:`, {
-        error: error.message,
-        detail: error.detail,
-        hint: error.hint,
-        code: error.code
-      });
+      console.error(
+        `[${new Date().toISOString()}] [Query ${queryId}] Query failed:`,
+        {
+          error: error.message,
+          detail: error.detail,
+          hint: error.hint,
+          code: error.code,
+        },
+      );
       return { data: null, error };
     } finally {
       if (client) {
         client.release();
-        console.log(`[${new Date().toISOString()}] [Query ${queryId}] Database client released`);
+        console.log(
+          `[${new Date().toISOString()}] [Query ${queryId}] Database client released`,
+        );
       }
     }
   }
@@ -120,9 +130,9 @@ class Database {
     try {
       client = await this.pool.connect();
       await client.query("BEGIN");
-      
+
       const result = await callback(client);
-      
+
       await client.query("COMMIT");
       return { data: result, error: null };
     } catch (error) {
@@ -134,4 +144,4 @@ class Database {
   }
 }
 
-export default Database; 
+export default Database;

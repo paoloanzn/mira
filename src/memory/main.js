@@ -5,8 +5,8 @@ import process from "node:process";
 import dotenv from "dotenv";
 
 if (process.env.NODE_ENV === "development") {
-    dotenv.config()
-    console.log(process.env)
+  dotenv.config();
+  console.log(process.env);
 }
 
 const serverConfig = {
@@ -18,7 +18,7 @@ const serverConfig = {
 const allowedOrigins = Object.freeze([
   "localhost",
   "172.20.0.1",
-  "agent-service", // This must be set by the agent-service in the origin header 
+  "agent-service", // This must be set by the agent-service in the origin header
 ]);
 
 const corsOriginPolicy = (origin, cb) => {
@@ -38,15 +38,15 @@ const corsOriginPolicy = (origin, cb) => {
 };
 
 const start = async () => {
-  dotenv.config()
+  dotenv.config();
   const fastify = Fastify({
-    logger: true,//process.env.NODE_ENV === "development",
+    logger: true, //process.env.NODE_ENV === "development",
   });
 
   // Register CORS
   //await fastify.register(cors, {
-    //origin: corsOriginPolicy,
-    //methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  //origin: corsOriginPolicy,
+  //methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   //});
 
   // Register routes
@@ -75,15 +75,15 @@ const start = async () => {
           type: "object",
           properties: {
             status: { type: "string" },
-            timestamp: { type: "string", format: "date-time" }
-          }
-        }
-      }
+            timestamp: { type: "string", format: "date-time" },
+          },
+        },
+      },
     },
     handler: () => ({
       status: "ok",
-      timestamp: new Date().toISOString()
-    })
+      timestamp: new Date().toISOString(),
+    }),
   });
 
   try {
@@ -100,4 +100,4 @@ const start = async () => {
   }
 };
 
-start(); 
+start();
