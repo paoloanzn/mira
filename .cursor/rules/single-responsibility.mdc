@@ -1,0 +1,124 @@
+---
+description: Ensures all code follows the Single-responsibility principle (SRP)
+globs: "**/*.{ts,tsx,js,jsx}"
+alwaysApply: true
+---
+# Single-responsibility Principle (SRP)
+
+This rule enforces that every module, class, and function in the codebase should have one and only one reason to change.
+
+## Core Guidelines
+
+1. Each module/class/function should:
+   - Do exactly one thing
+   - Do it well
+   - Do it only
+
+2. Signs of SRP violations:
+   - Functions longer than 20-30 lines
+   - Classes with multiple unrelated methods
+   - Modules that change for different reasons
+   - Functions with "and" in their names
+
+## Examples
+
+### ✅ Good Examples
+
+```typescript
+// Single responsibility: User authentication
+class UserAuthenticator {
+  async authenticate(credentials: Credentials): Promise<AuthResult> {
+    // Authentication logic only
+  }
+}
+
+// Single responsibility: Password validation
+class PasswordValidator {
+  validate(password: string): ValidationResult {
+    // Password validation logic only
+  }
+}
+
+// Single responsibility: Formatting user data
+function formatUserProfile(user: User): FormattedProfile {
+  // Formatting logic only
+}
+```
+
+### ❌ Bad Examples
+
+```typescript
+// Multiple responsibilities: Authentication AND user data management
+class UserManager {
+  async authenticate(credentials: Credentials): Promise<AuthResult> {
+    // Authentication logic
+  }
+  
+  updateProfile(userId: string, data: ProfileData): void {
+    // Profile update logic
+  }
+  
+  sendNotification(userId: string, message: string): void {
+    // Notification logic
+  }
+}
+
+// Multiple responsibilities in one function
+function validateAndSaveUser(userData: UserData): void {
+  // Validation logic
+  // Database operations
+  // Email notifications
+  // Logging
+}
+```
+
+## Implementation Guidelines
+
+1. Module Level
+   - Each module should focus on a single feature or functionality
+   - If a module handles multiple concerns, split it into separate modules
+
+2. Class Level
+   - Classes should have a single purpose
+   - If a class has multiple responsibilities, break it into smaller classes
+   - Use composition over inheritance
+
+3. Function Level
+   - Functions should do one operation
+   - Extract complex conditions into separate functions
+   - Keep functions small and focused
+
+## Refactoring Patterns
+
+When you identify SRP violations, use these refactoring patterns:
+
+1. Extract Class
+   - Split large classes into smaller, focused ones
+   - Use composition to combine functionality
+
+2. Extract Method
+   - Break large methods into smaller, single-purpose methods
+   - Name methods based on their single responsibility
+
+3. Move Method/Field
+   - Relocate methods/fields to more appropriate classes
+   - Group related functionality together
+
+## Checklist
+
+Before committing code, ensure:
+
+- [ ] Each function has a single, clear purpose
+- [ ] Class names clearly indicate their single responsibility
+- [ ] No "god objects" that handle multiple concerns
+- [ ] Functions are small and focused (ideally < 30 lines)
+- [ ] No mixed levels of abstraction in functions
+- [ ] Clear separation of concerns between modules
+
+## Benefits
+
+- Improved maintainability
+- Easier testing
+- Better code organization
+- Reduced coupling
+- Increased reusability

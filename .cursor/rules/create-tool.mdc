@@ -1,0 +1,158 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# AI SDK Tool Creation Guidelines
+
+This rule defines what a tool is in the AI SDK context and provides guidelines for creating new tools.
+
+## What is a Tool?
+
+A tool is a function that can be called by the AI model during text generation. It has three main components:
+
+1. **Description**: A clear explanation of what the tool does
+2. **Parameters**: A Zod schema defining the expected input parameters
+3. **Execute Function**: The actual implementation that performs the tool's task
+
+## Tool Structure
+
+```typescript
+const myTool = tool({
+  description: string,
+  parameters: z.ZodType,
+  execute: async (params, context) => any
+});
+```
+
+### Components Breakdown
+
+1. **Description**
+   - Must be clear and concise
+   - Should explain the tool's purpose in one sentence
+   - Must specify any important limitations or requirements
+
+2. **Parameters**
+   - Must use Zod schema for type validation
+   - Each parameter should have a clear purpose
+   - Should include type information and validation rules
+   - Example:
+   ```typescript
+   parameters: z.object({
+     query: z.string().min(1).describe('Search query'),
+     limit: z.number().optional().default(10)
+   })
+   ```
+
+3. **Execute Function**
+   - Must be async
+   - Must handle the abort signal from context
+   - Should include proper error handling
+   - Should return consistent data structures
+   - Example:
+   ```typescript
+   execute: async (params, { abortSignal }) => {
+     try {
+       const response = await fetch(url, { signal: abortSignal });
+       if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+       return await response.json();
+     } catch (error) {
+       if (error.name === 'AbortError') {
+         throw new Error('Operation cancelled');
+       }
+       throw error;
+     }
+   }
+   ```
+
+## Best Practices
+
+1. **Error Handling**
+   - Always include try/catch blocks
+   - Handle abort signals appropriately
+   - Return meaningful error messages
+   - Use consistent error formats
+
+2. **Type Safety**
+   - Use Zod for runtime type validation
+   - Define clear parameter interfaces
+   - Validate return types
+
+3. **Performance**
+   - Keep tools focused and lightweight
+   - Cache results when appropriate
+   - Handle timeouts gracefully
+
+4. **Documentation**
+   - Include JSDoc comments
+   - Document all parameters
+   - Provide usage examples
+   - List any dependencies or requirements
+
+## Example Implementation
+
+```typescript
+import { z } from 'zod';
+import { tool } from 'ai';
+
+const searchTool = tool({
+  description: 'Search for information in a specific database',
+  parameters: z.object({
+    query: z.string().min(1).describe('Search query string'),
+    database: z.enum(['users', 'products']).describe('Database to search in'),
+    limit: z.number().min(1).max(100).optional().default(10)
+  }),
+  execute: async ({ query, database, limit }, { abortSignal }) => {
+    try {
+      const response = await fetch(
+        `https://api.example.com/search/${database}?q=${query}&limit=${limit}`,
+        { signal: abortSignal }
+      );
+      
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new Error('Search operation cancelled');
+      }
+      throw new Error(`Search error: ${error.message}`);
+    }
+  }
+});
+```
+
+## Testing Guidelines
+
+1. Test tool parameters with:
+   - Valid inputs
+   - Invalid inputs
+   - Edge cases
+   - Missing optional parameters
+
+2. Test execute function with:
+   - Success cases
+   - Error cases
+   - Abort signal handling
+   - Timeout scenarios
+
+## Common Mistakes to Avoid
+
+1. ❌ Not handling abort signals
+2. ❌ Missing error handling
+3. ❌ Unclear or missing parameter validation
+4. ❌ Inconsistent return types
+5. ❌ Poor or missing documentation
+6. ❌ Not following single responsibility principle
+
+## Checklist Before Implementation
+
+- [ ] Clear and specific description
+- [ ] Complete parameter validation
+- [ ] Proper error handling
+- [ ] Abort signal handling
+- [ ] Documentation and examples
+- [ ] Unit tests
+- [ ] Performance considerations

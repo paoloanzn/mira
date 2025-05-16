@@ -1,0 +1,207 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Error Handling Standards
+
+This rule defines the standard patterns and conventions for error handling across the codebase to ensure consistency, maintainability, and proper error management.
+
+## Base Error Classes
+
+All custom errors should extend from a base error class following this pattern:
+
+```javascript
+export class CustomBaseError extends Error {
+  constructor(message, type, originalError = null) {
+    super(message);
+    this.name = this.constructor.name;
+    this.type = type;
+    this.originalError = originalError;
+  }
+}
+```
+
+## Error Type Enums
+
+Error types should be defined using frozen enums:
+
+```javascript
+export const ErrorType = Object.freeze({
+  VALIDATION: 'validation',
+  NETWORK: 'network',
+  BUSINESS_LOGIC: 'business_logic',
+  EXTERNAL_SERVICE: 'external_service',
+  UNKNOWN: 'unknown',
+});
+```
+
+## Error Class Implementation Guidelines
+
+1. **Naming Convention**
+   - Error class names should end with 'Error'
+   - Use PascalCase for class names
+   - Use descriptive names that indicate the domain/module
+
+```javascript
+// ✅ Good
+export class DatabaseConnectionError extends CustomBaseError {}
+export class ValidationError extends CustomBaseError {}
+
+// ❌ Bad
+export class DBError extends Error {}
+export class ValidateErr extends Error {}
+```
+
+2. **Required Properties**
+   - `name`: Class name (automatically set)
+   - `message`: Human-readable error description
+   - `type`: Error type from ErrorType enum
+   - `originalError`: Original error if wrapping another error (optional)
+
+3. **Optional Properties**
+   - `code`: Machine-readable error code
+   - `details`: Additional error context
+   - `stack`: Stack trace (automatically provided)
+
+## Error Handling Patterns
+
+1. **Async Operations**
+   Always use try-catch with async/await:
+
+```javascript
+try {
+  await asyncOperation();
+} catch (error) {
+  if (error instanceof CustomBaseError) {
+    // Handle known error types
+  } else {
+    // Wrap unknown errors
+    throw new CustomBaseError(
+      'Operation failed',
+      ErrorType.UNKNOWN,
+      error
+    );
+  }
+}
+```
+
+2. **Error Propagation**
+   - Wrap low-level errors in domain-specific errors
+   - Preserve the original error chain
+   - Add contextual information at each level
+
+3. **Retry Mechanism**
+   For operations that may be retryable:
+
+```javascript
+const retryConfig = {
+  maxRetries: 3,
+  baseDelay: 1000,
+  maxDelay: 10000,
+};
+
+async function withRetries(fn, config = retryConfig) {
+  // Implementation as shown in ai/errors.js
+}
+```
+
+## Error Messages
+
+1. **Message Format**
+   - Be specific and actionable
+   - Include relevant context
+   - Use consistent terminology
+
+```javascript
+// ✅ Good
+throw new ValidationError(
+  'User email is invalid: missing @ symbol',
+  ErrorType.VALIDATION
+);
+
+// ❌ Bad
+throw new Error('invalid');
+```
+
+2. **Message Guidelines**
+   - Start with a capital letter
+   - End without punctuation
+   - Use present tense
+   - Be concise but informative
+
+## Error Documentation
+
+Document error classes with JSDoc:
+
+```javascript
+/**
+ * Represents an error that occurs during database operations
+ * @extends CustomBaseError
+ */
+export class DatabaseError extends CustomBaseError {
+  /**
+   * @param {string} message - Error message
+   * @param {string} type - Error type from ErrorType
+   * @param {Error} [originalError] - Original error if any
+   * @param {Object} [details] - Additional error details
+   */
+  constructor(message, type, originalError = null, details = {}) {
+    super(message, type, originalError);
+    this.details = details;
+  }
+}
+```
+
+## Error Logging
+
+1. **Log Levels**
+   - ERROR: For unrecoverable errors
+   - WARN: For recoverable errors
+   - INFO: For important operations
+   - DEBUG: For debugging information
+
+2. **Log Format**
+   ```javascript
+   logger.error({
+     error: error.name,
+     message: error.message,
+     type: error.type,
+     details: error.details,
+     stack: error.stack,
+   });
+   ```
+
+## Testing Error Handling
+
+1. **Test Cases**
+   - Test happy path
+   - Test each error condition
+   - Test error recovery mechanisms
+   - Test retry logic
+
+2. **Example Test**
+   ```javascript
+   describe('Error Handling', () => {
+     it('should wrap low-level errors', async () => {
+       const error = new DatabaseError(
+         'Connection failed',
+         ErrorType.NETWORK
+       );
+       expect(error).toBeInstanceOf(CustomBaseError);
+       expect(error.type).toBe(ErrorType.NETWORK);
+     });
+   });
+   ```
+
+## Checklist
+
+Before committing code, ensure:
+
+- [ ] Errors extend CustomBaseError
+- [ ] Error types are properly defined
+- [ ] Error messages are clear and actionable
+- [ ] Error handling includes proper logging
+- [ ] Errors are properly documented
+- [ ] Error handling is tested
+- [ ] Retry mechanisms are implemented where appropriate

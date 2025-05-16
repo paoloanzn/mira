@@ -1,0 +1,267 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Testing Standards with Vitest
+
+This rule defines how tests should be structured and written in our codebase using Vitest as our testing framework.
+
+## File Organization
+
+1. Test files should:
+   - Be placed next to the file they're testing
+   - Use `.test.js` or `.test.jsx` extension
+   - Follow the naming pattern: `[component-name].test.jsx`
+
+```
+src/
+  ├── components/
+  │   ├── Button.jsx
+  │   └── Button.test.jsx
+  └── utils/
+      ├── format.js
+      └── format.test.js
+```
+
+## Test Structure
+
+### Basic Test Structure
+
+```javascript
+import { describe, it, expect } from 'vitest'
+import { ComponentToTest } from './ComponentToTest'
+
+describe('ComponentToTest', () => {
+  it('should render correctly', () => {
+    // Arrange
+    const props = {}
+    
+    // Act
+    const result = // test action
+    
+    // Assert
+    expect(result).toBe(expected)
+  })
+})
+```
+
+### Test Grouping
+
+- Use `describe` blocks to group related tests
+- Nest `describe` blocks for sub-features
+- Use clear, descriptive test names
+
+```javascript
+describe('UserProfile', () => {
+  describe('when user is authenticated', () => {
+    it('should display user information')
+    it('should show edit button')
+  })
+
+  describe('when user is not authenticated', () => {
+    it('should show login prompt')
+  })
+})
+```
+
+## Naming Conventions
+
+1. Test Descriptions:
+   - Should be descriptive and follow the pattern: "should [expected behavior] when [condition]"
+   - Use present tense
+   - Be specific about the expected outcome
+
+```javascript
+// ✅ Good
+it('should display error message when password is invalid')
+it('should enable submit button when form is valid')
+
+// ❌ Bad
+it('test password validation')
+it('button works')
+```
+
+## Testing Patterns
+
+### Component Testing
+
+```javascript
+import { render, screen } from '@testing-library/react'
+import { expect, describe, it } from 'vitest'
+import { Button } from './Button'
+
+describe('Button', () => {
+  it('should render with provided text', () => {
+    render(<Button>Click me</Button>)
+    expect(screen.getByText('Click me')).toBeInTheDocument()
+  })
+
+  it('should call onClick handler when clicked', async () => {
+    const onClick = vi.fn()
+    render(<Button onClick={onClick}>Click me</Button>)
+    
+    await userEvent.click(screen.getByText('Click me'))
+    expect(onClick).toHaveBeenCalledOnce()
+  })
+})
+```
+
+### Hook Testing
+
+```javascript
+import { renderHook, act } from '@testing-library/react'
+import { useCounter } from './useCounter'
+
+describe('useCounter', () => {
+  it('should increment counter', () => {
+    const { result } = renderHook(() => useCounter())
+    
+    act(() => {
+      result.current.increment()
+    })
+    
+    expect(result.current.count).toBe(1)
+  })
+})
+```
+
+### API/Service Testing
+
+```javascript
+import { vi } from 'vitest'
+import { UserService } from './UserService'
+
+describe('UserService', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('should fetch user data successfully', async () => {
+    const mockData = { id: 1, name: 'John' }
+    global.fetch = vi.fn().mockResolvedValue({
+      json: () => Promise.resolve(mockData),
+      ok: true
+    })
+
+    const result = await UserService.getUser(1)
+    expect(result).toEqual(mockData)
+  })
+})
+```
+
+## Best Practices
+
+1. Mocking:
+   - Use `vi.mock()` for module mocks
+   - Use `vi.fn()` for function mocks
+   - Reset mocks between tests using `beforeEach`
+
+2. Assertions:
+   - Use specific matchers
+   - Prefer positive assertions over negative ones
+   - Test edge cases and error scenarios
+
+3. Setup and Cleanup:
+   - Use `beforeEach` for common setup
+   - Use `afterEach` for cleanup
+   - Keep tests isolated
+
+```javascript
+describe('UserForm', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    cleanup()
+  })
+})
+```
+
+4. Async Testing:
+   - Always await async operations
+   - Use `expect().resolves` and `expect().rejects`
+   - Handle timeouts appropriately
+
+```javascript
+it('should handle async operations', async () => {
+  await expect(asyncFunction()).resolves.toBe(expected)
+  await expect(failingFunction()).rejects.toThrow()
+})
+```
+
+## Coverage Requirements
+
+- Minimum coverage requirements:
+  - Statements: 80%
+  - Branches: 75%
+  - Functions: 80%
+  - Lines: 80%
+
+```javascript
+// vitest.config.js
+export default defineConfig({
+  test: {
+    coverage: {
+      reporter: ['text', 'json', 'html'],
+      branches: 75,
+      functions: 80,
+      lines: 80,
+      statements: 80
+    }
+  }
+})
+```
+
+## Common Matchers
+
+```javascript
+// Equality
+expect(value).toBe(primitive)
+expect(value).toEqual(object)
+
+// Truthiness
+expect(value).toBeTruthy()
+expect(value).toBeFalsy()
+
+// Numbers
+expect(value).toBeGreaterThan(3)
+expect(value).toBeLessThan(5)
+
+// Strings
+expect(string).toMatch(/pattern/)
+expect(string).toContain('substring')
+
+// Arrays
+expect(array).toContain(item)
+expect(array).toHaveLength(2)
+
+// Objects
+expect(object).toHaveProperty('key')
+expect(object).toMatchObject(subset)
+
+// Promises
+expect(promise).resolves.toBe(value)
+expect(promise).rejects.toThrow()
+```
+
+## Debugging Tests
+
+1. Use `test.only()` to run specific tests
+2. Use `console.log()` with `screen.debug()`
+3. Use the built-in debugger
+4. Check test coverage reports
+
+```javascript
+// Running specific tests
+test.only('should focus on this test', () => {
+  // Only this test will run
+})
+
+// Debugging component output
+test('component rendering', () => {
+  render(<Component />)
+  screen.debug() // Prints the rendered HTML
+})
+```

@@ -1,0 +1,58 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./src/memory/db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  memory-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.memory
+    environment:
+      NODE_ENV: production
+      DB_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      MEMORY_PORT: 8081
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:8081/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      db:
+        condition: service_healthy
+
+  agent-service:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    environment:
+      NODE_ENV: production
+      MEMORY_SERVICE_URL: http://memory-service:8081
+      TWITTER_USERNAME: ${TWITTER_USERNAME}
+      TWITTER_EMAIL: ${TWITTER_EMAIL}
+      TWITTER_PASSWORD: ${TWITTER_PASSWORD}
+      TWITTER_COOKIES: ${TWITTER_COOKIES}
+      AGENT_USER_ID: ${AGENT_USER_ID}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    ports:
+      - "8080:8080"
+    depends_on:
+      memory-service:
+        condition: service_healthy
+
+volumes:
+  postgres_data: 
