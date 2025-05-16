@@ -16,7 +16,8 @@
     "format": "prettier --write .",
     "dev:memory": "cross-env NODE_ENV=development node --watch src/memory/main.js",
     "dev:agent": "cross-env NODE_ENV=development node --watch src/agent/main.js",
-    "dev": "npm-run-all --parallel dev:memory dev:agent"
+    "dev": "npm-run-all --parallel dev:memory dev:agent",
+    "docs:generate": "node docs/index.js"
   },
   "keywords": [],
   "author": "",
@@ -42,6 +43,7 @@
     "cross-env": "^7.0.3",
     "drizzle-kit": "^0.31.1",
     "eslint": "^9.26.0",
+    "jsdoc-to-markdown": "^9.1.1",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
