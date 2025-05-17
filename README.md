@@ -6,7 +6,7 @@
 
 <div align="center">
 
-📖 [Documentation](https://elizaos.github.io/eliza/) | 📄 [Litepaper](#)
+📖 [Documentation](./docs/README.md) | 📄 [Litepaper](#)
 
 </div>
 
