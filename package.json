@@ -1,5 +1,5 @@
 {
-  "name": "@mira/mira-cli",
+  "name": "@mira-ai/mira-cli",
   "version": "0.0.1",
   "type": "module",
   "main": "src/index.js",
