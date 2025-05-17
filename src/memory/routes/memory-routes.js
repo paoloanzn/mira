@@ -1,4 +1,4 @@
-import Route from "./route.js";
+import Route from "../../lib/routes/route.js";
 import UsersManager from "../db/users-manager.js";
 import ConversationsManager from "../db/conversations-manager.js";
 import MessagesManager from "../db/messages-manager.js";

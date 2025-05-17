@@ -29,7 +29,6 @@ This documentation is automatically generated from JSDoc comments in the source 
 ### memory/routes
 
 
-- [route.js](root/memory/routes/route.md)
 - [memory-routes.js](root/memory/routes/memory-routes.md)
 
 
