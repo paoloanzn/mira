@@ -21,25 +21,24 @@ and handles both cookie and password-based authentication.</p>
 <a name="performLogin"></a>
 
 ## performLogin(scraper) ⇒ [<code>Promise.&lt;LoginResult&gt;</code>](#LoginResult)
-
 Performs login for the scraper instance using credentials from environment variables
 and handles both cookie and password-based authentication.
 
 **Kind**: global function  
-**Returns**: [<code>Promise.&lt;LoginResult&gt;</code>](#LoginResult) - The login result
+**Returns**: [<code>Promise.&lt;LoginResult&gt;</code>](#LoginResult) - The login result  
 
-| Param   | Type                 | Description                          |
-| ------- | -------------------- | ------------------------------------ |
+| Param | Type | Description |
+| --- | --- | --- |
 | scraper | <code>Scraper</code> | The scraper instance to authenticate |
 
 <a name="LoginResult"></a>
 
 ## LoginResult : <code>Object</code>
-
 **Kind**: global typedef  
 **Properties**
 
-| Name    | Type                                     | Description                            |
-| ------- | ---------------------------------------- | -------------------------------------- |
-| success | <code>boolean</code>                     | Whether the login was successful       |
+| Name | Type | Description |
+| --- | --- | --- |
+| success | <code>boolean</code> | Whether the login was successful |
 | message | <code>string</code> \| <code>null</code> | Optional message describing the result |
+

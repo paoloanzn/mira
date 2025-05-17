@@ -22,92 +22,110 @@ Handles all communication between the agent and memory service.</p>
 <a name="MemoryClient"></a>
 
 ## MemoryClient
-
 Client for interacting with the memory service.
 Handles all communication between the agent and memory service.
 
-**Kind**: global class
+**Kind**: global class  
 
-- [MemoryClient](#MemoryClient)
-  - [new MemoryClient(baseUrl)](#new_MemoryClient_new)
-  - [.createUser()](#MemoryClient+createUser) ⇒ <code>Promise.&lt;{data: ({id: string}\|null), error: (Error\|null)}&gt;</code>
-  - [.getUser(userId)](#MemoryClient+getUser) ⇒ <code>Promise.&lt;{data: (Object\|null), error: (Error\|null)}&gt;</code>
-  - [.createConversation(userIds)](#MemoryClient+createConversation) ⇒ <code>Promise.&lt;{data: ({id: string}\|null), error: (Error\|null)}&gt;</code>
-  - [.createMessage(conversationId, userId, content)](#MemoryClient+createMessage) ⇒ <code>Promise.&lt;{data: ({id: string}\|null), error: (Error\|null)}&gt;</code>
-  - [.getMessages(conversationId)](#MemoryClient+getMessages) ⇒ <code>Promise.&lt;{data: (Array\|null), error: (Error\|null)}&gt;</code>
+* [MemoryClient](#MemoryClient)
+    * [new MemoryClient(baseUrl)](#new_MemoryClient_new)
+    * [.getOrCreateUser(hostname, [options])](#MemoryClient+getOrCreateUser) ⇒ <code>Promise.&lt;{userId: (string\|null), error: (Error\|null)}&gt;</code>
+    * [.getOrCreateConversation(userId, agentUserId)](#MemoryClient+getOrCreateConversation) ⇒ <code>Promise.&lt;{conversationId: (string\|null), error: (Error\|null)}&gt;</code>
+    * [.createConversation(userIds)](#MemoryClient+createConversation) ⇒ <code>Promise.&lt;{data: ({id: string}\|null), error: (Error\|null)}&gt;</code>
+    * [.createMessage(conversationId, userId, content)](#MemoryClient+createMessage) ⇒ <code>Promise.&lt;{data: ({id: string}\|null), error: (Error\|null)}&gt;</code>
+    * [.getMessages(conversationId, [options])](#MemoryClient+getMessages) ⇒ <code>Promise.&lt;{data: (Array\|null), error: (Error\|null)}&gt;</code>
+    * [.formatConversation(messages, agentUserId)](#MemoryClient+formatConversation) ⇒ <code>string</code>
 
 <a name="new_MemoryClient_new"></a>
 
 ### new MemoryClient(baseUrl)
-
 Creates a new MemoryClient instance.
 
-| Param   | Type                | Description                    |
-| ------- | ------------------- | ------------------------------ |
+
+| Param | Type | Description |
+| --- | --- | --- |
 | baseUrl | <code>string</code> | Base URL of the memory service |
 
-<a name="MemoryClient+createUser"></a>
+<a name="MemoryClient+getOrCreateUser"></a>
 
-### memoryClient.createUser() ⇒ <code>Promise.&lt;{data: ({id: string}\|null), error: (Error\|null)}&gt;</code>
-
-Creates a new user.
+### memoryClient.getOrCreateUser(hostname, [options]) ⇒ <code>Promise.&lt;{userId: (string\|null), error: (Error\|null)}&gt;</code>
+Get or create a user by hostname
 
 **Kind**: instance method of [<code>MemoryClient</code>](#MemoryClient)  
-<a name="MemoryClient+getUser"></a>
 
-### memoryClient.getUser(userId) ⇒ <code>Promise.&lt;{data: (Object\|null), error: (Error\|null)}&gt;</code>
+| Param | Type | Description |
+| --- | --- | --- |
+| hostname | <code>string</code> | The hostname to identify the user |
+| [options] | <code>Object</code> | Additional options for user creation |
+| [options.is_agent] | <code>boolean</code> | Whether the user is an agent |
 
-Gets a user by ID.
+<a name="MemoryClient+getOrCreateConversation"></a>
 
-**Kind**: instance method of [<code>MemoryClient</code>](#MemoryClient)
+### memoryClient.getOrCreateConversation(userId, agentUserId) ⇒ <code>Promise.&lt;{conversationId: (string\|null), error: (Error\|null)}&gt;</code>
+Gets or creates a conversation for a user with the agent.
 
-| Param  | Type                | Description   |
-| ------ | ------------------- | ------------- |
+**Kind**: instance method of [<code>MemoryClient</code>](#MemoryClient)  
+
+| Param | Type | Description |
+| --- | --- | --- |
 | userId | <code>string</code> | The user's ID |
+| agentUserId | <code>string</code> | The agent's user ID |
 
 <a name="MemoryClient+createConversation"></a>
 
 ### memoryClient.createConversation(userIds) ⇒ <code>Promise.&lt;{data: ({id: string}\|null), error: (Error\|null)}&gt;</code>
-
 Creates a new conversation.
 
-**Kind**: instance method of [<code>MemoryClient</code>](#MemoryClient)
+**Kind**: instance method of [<code>MemoryClient</code>](#MemoryClient)  
 
-| Param   | Type                              | Description                                  |
-| ------- | --------------------------------- | -------------------------------------------- |
+| Param | Type | Description |
+| --- | --- | --- |
 | userIds | <code>Array.&lt;string&gt;</code> | Array of user IDs to add to the conversation |
 
 <a name="MemoryClient+createMessage"></a>
 
 ### memoryClient.createMessage(conversationId, userId, content) ⇒ <code>Promise.&lt;{data: ({id: string}\|null), error: (Error\|null)}&gt;</code>
-
 Creates a new message in a conversation.
 
-**Kind**: instance method of [<code>MemoryClient</code>](#MemoryClient)
+**Kind**: instance method of [<code>MemoryClient</code>](#MemoryClient)  
 
-| Param          | Type                | Description         |
-| -------------- | ------------------- | ------------------- |
+| Param | Type | Description |
+| --- | --- | --- |
 | conversationId | <code>string</code> | The conversation ID |
-| userId         | <code>string</code> | The user ID         |
-| content        | <code>string</code> | The message content |
+| userId | <code>string</code> | The user ID |
+| content | <code>string</code> | The message content |
 
 <a name="MemoryClient+getMessages"></a>
 
-### memoryClient.getMessages(conversationId) ⇒ <code>Promise.&lt;{data: (Array\|null), error: (Error\|null)}&gt;</code>
-
+### memoryClient.getMessages(conversationId, [options]) ⇒ <code>Promise.&lt;{data: (Array\|null), error: (Error\|null)}&gt;</code>
 Gets messages from a conversation.
 
-**Kind**: instance method of [<code>MemoryClient</code>](#MemoryClient)
+**Kind**: instance method of [<code>MemoryClient</code>](#MemoryClient)  
 
-| Param          | Type                | Description         |
-| -------------- | ------------------- | ------------------- |
+| Param | Type | Description |
+| --- | --- | --- |
 | conversationId | <code>string</code> | The conversation ID |
+| [options] | <code>Object</code> | Additional options |
+| [options.embedding] | <code>Array.&lt;number&gt;</code> | Embedding vector for similarity search |
+| [options.limit] | <code>number</code> | Maximum number of messages to return |
+
+<a name="MemoryClient+formatConversation"></a>
+
+### memoryClient.formatConversation(messages, agentUserId) ⇒ <code>string</code>
+Formats messages into a conversation string.
+
+**Kind**: instance method of [<code>MemoryClient</code>](#MemoryClient)  
+**Returns**: <code>string</code> - Formatted conversation string  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| messages | <code>Array</code> | Array of message objects |
+| agentUserId | <code>string</code> | The agent's user ID |
 
 <a name="getMemoryClient"></a>
 
 ## getMemoryClient() ⇒ [<code>MemoryClient</code>](#MemoryClient)
-
 Gets the singleton instance of MemoryClient.
 
 **Kind**: global function  
-**Returns**: [<code>MemoryClient</code>](#MemoryClient) - The MemoryClient instance
+**Returns**: [<code>MemoryClient</code>](#MemoryClient) - The MemoryClient instance  

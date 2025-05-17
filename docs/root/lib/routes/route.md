@@ -1,6 +1,6 @@
 # route.js
 
-Source: `src/memory/routes/route.js`
+Source: `src/lib/routes/route.js`
 
 ## Classes
 

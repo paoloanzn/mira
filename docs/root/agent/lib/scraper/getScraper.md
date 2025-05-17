@@ -22,17 +22,15 @@ Source: `src/agent/lib/scraper/getScraper.js`
 <a name="scraper"></a>
 
 ## scraper : <code>Scraper</code> \| <code>null</code>
-
 Singleton instance of the Scraper class
 
 **Kind**: global variable  
 <a name="getScraper"></a>
 
 ## getScraper() ⇒ <code>Scraper</code>
-
 Returns a singleton instance of the Scraper class.
 
 If an instance doesn't exist, creates a new one. Otherwise returns the existing instance.
 
 **Kind**: global function  
-**Returns**: <code>Scraper</code> - The Scraper instance
+**Returns**: <code>Scraper</code> - The Scraper instance  
