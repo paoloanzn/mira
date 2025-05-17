@@ -1,8 +1,12 @@
 import Route from "./route.js";
-import MemoryManager from "../db/memory-manager.js";
+import UsersManager from "../db/users-manager.js";
+import ConversationsManager from "../db/conversations-manager.js";
+import MessagesManager from "../db/messages-manager.js";
 
 const memoryRoute = new Route("/memory");
-const memoryManager = new MemoryManager();
+const usersManager = new UsersManager();
+const conversationsManager = new ConversationsManager();
+const messagesManager = new MessagesManager();
 
 const routes = [
   {
@@ -10,6 +14,14 @@ const routes = [
     url: "/users",
     schema: {
       description: "Create a new user",
+      body: {
+        type: "object",
+        required: ["hostname"],
+        properties: {
+          hostname: { type: "string" },
+          is_agent: { type: "boolean", default: false },
+        },
+      },
       response: {
         200: {
           type: "object",
@@ -20,7 +32,8 @@ const routes = [
       },
     },
     handler: async (request, reply) => {
-      const { data, error } = await memoryManager.createUser();
+      const { hostname, is_agent = false } = request.body;
+      const { data, error } = await usersManager.createUser(is_agent, hostname);
       if (error) {
         reply.status(500).send({ error: error.message });
         return;
@@ -30,15 +43,21 @@ const routes = [
   },
   {
     method: "GET",
-    url: "/users/:userId",
+    url: "/users",
     schema: {
-      description: "Get a user by ID",
-      params: {
+      description: "Get a user by various criteria",
+      querystring: {
         type: "object",
         properties: {
-          userId: { type: "string", format: "uuid" },
+          id: { type: "string", format: "uuid" },
+          hostname: { type: "string" },
+          is_agent: { type: "boolean" },
         },
-        required: ["userId"],
+        anyOf: [
+          { required: ["id"] },
+          { required: ["hostname"] },
+          { required: ["is_agent"] },
+        ],
       },
       response: {
         200: {
@@ -52,13 +71,18 @@ const routes = [
       },
     },
     handler: async (request, reply) => {
-      const { userId } = request.params;
-      const { data, error } = await memoryManager.getUser(userId);
+      const { id, hostname, is_agent } = request.query;
+      const { data, error } = await usersManager.getUser({
+        id,
+        hostname,
+        isAgent: is_agent,
+      });
+
       if (error) {
         reply.status(500).send({ error: error.message });
         return;
       }
-      if (!data) {
+      if (!data || data.length === 0) {
         reply.status(404).send({ error: "User not found" });
         return;
       }
@@ -92,7 +116,67 @@ const routes = [
     },
     handler: async (request, reply) => {
       const { userIds } = request.body;
-      const { data, error } = await memoryManager.createConversation(userIds);
+      const { data, error } =
+        await conversationsManager.createConversation(userIds);
+      if (error) {
+        reply.status(500).send({ error: error.message });
+        return;
+      }
+      reply.send(data);
+    },
+  },
+  {
+    method: "GET",
+    url: "/conversations/:conversationId/messages",
+    schema: {
+      description: "Get messages from a conversation",
+      params: {
+        type: "object",
+        properties: {
+          conversationId: { type: "string", format: "uuid" },
+        },
+        required: ["conversationId"],
+      },
+      querystring: {
+        type: "object",
+        properties: {
+          embedding: {
+            type: "array",
+            items: { type: "number" },
+            minItems: 1536,
+            maxItems: 1536,
+          },
+          limit: { type: "integer", minimum: 1, maximum: 100, default: 5 },
+        },
+      },
+      response: {
+        200: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string", format: "uuid" },
+              content: { type: "string" },
+              user_id: { type: "string", format: "uuid" },
+              created_at: { type: "string", format: "date-time" },
+              embedding: {
+                type: "array",
+                items: { type: "number" },
+                nullable: true,
+              },
+            },
+          },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const { conversationId } = request.params;
+      const { embedding, limit } = request.query;
+      const { data, error } = await messagesManager.getMessages({
+        conversationId,
+        embedding,
+        limit,
+      });
       if (error) {
         reply.status(500).send({ error: error.message });
         return;
@@ -132,7 +216,7 @@ const routes = [
     handler: async (request, reply) => {
       const { conversationId } = request.params;
       const { userId, content } = request.body;
-      const { data, error } = await memoryManager.createMessage(
+      const { data, error } = await messagesManager.createMessage(
         conversationId,
         userId,
         content,
@@ -142,110 +226,6 @@ const routes = [
         return;
       }
       reply.send(data[0]);
-    },
-  },
-  {
-    method: "GET",
-    url: "/conversations/:conversationId/messages",
-    schema: {
-      description: "Get messages from a conversation",
-      params: {
-        type: "object",
-        properties: {
-          conversationId: { type: "string", format: "uuid" },
-        },
-        required: ["conversationId"],
-      },
-      response: {
-        200: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              id: { type: "string", format: "uuid" },
-              content: { type: "string" },
-              user_id: { type: "string", format: "uuid" },
-              created_at: { type: "string", format: "date-time" },
-              embedding: {
-                type: "array",
-                items: { type: "number" },
-                nullable: true,
-              },
-            },
-          },
-        },
-      },
-    },
-    handler: async (request, reply) => {
-      const { conversationId } = request.params;
-      const { data, error } = await memoryManager.getMessages(conversationId);
-      if (error) {
-        reply.status(500).send({ error: error.message });
-        return;
-      }
-      reply.send(data);
-    },
-  },
-  {
-    method: "POST",
-    url: "/conversations/:conversationId/messages/similar",
-    schema: {
-      description: "Get messages similar to an embedding vector",
-      params: {
-        type: "object",
-        properties: {
-          conversationId: { type: "string", format: "uuid" },
-        },
-        required: ["conversationId"],
-      },
-      querystring: {
-        type: "object",
-        properties: {
-          limit: { type: "integer", minimum: 1, maximum: 100, default: 5 },
-        },
-      },
-      body: {
-        type: "object",
-        properties: {
-          embedding: {
-            type: "array",
-            items: { type: "number" },
-            minItems: 1536,
-            maxItems: 1536,
-          },
-        },
-        required: ["embedding"],
-      },
-      response: {
-        200: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              id: { type: "string", format: "uuid" },
-              content: { type: "string" },
-              user_id: { type: "string", format: "uuid" },
-              similarity: { type: "number" },
-              created_at: { type: "string", format: "date-time" },
-            },
-          },
-        },
-      },
-    },
-    handler: async (request, reply) => {
-      const { conversationId } = request.params;
-      const { limit = 5 } = request.query;
-      const { embedding } = request.body;
-      const { data, error } = await memoryManager.getMessagesByEmbedding(
-        embedding,
-        conversationId,
-        limit,
-      );
-      if (error) {
-        reply.status(500).send({ error: error.message });
-        return;
-      }
-      reply.send(data);
     },
   },
   {
@@ -276,7 +256,7 @@ const routes = [
     handler: async (request, reply) => {
       const { messageId } = request.params;
       const { embedding } = request.body;
-      const { error } = await memoryManager.updateMessageEmbedding(
+      const { error } = await messagesManager.updateMessageEmbedding(
         messageId,
         embedding,
       );

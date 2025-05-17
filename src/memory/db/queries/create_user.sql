@@ -1,1 +1,1 @@
-INSERT INTO users DEFAULT VALUES RETURNING id; 
+INSERT INTO users (is_agent, hostname) VALUES ($1, $2) RETURNING id;

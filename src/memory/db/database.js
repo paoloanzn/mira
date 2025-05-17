@@ -31,6 +31,8 @@ class Database {
         queries: [
           "create_user.sql",
           "get_user.sql",
+          "get_agent_user.sql",
+          "get_user_by_hostname.sql",
           "create_conversation.sql",
           "get_conversation.sql",
           "add_user_to_conversation.sql",

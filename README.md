@@ -13,6 +13,7 @@
 # Installation
 
 ## Requirements
+
 - `docker`
 - `docker-compose`
 - `node`
@@ -37,8 +38,8 @@ npm i
 ```bash
 cp .env.example .env
 ```
-Edit the `.env` file.
 
+Edit the `.env` file.
 
 ## Run Mira System
 

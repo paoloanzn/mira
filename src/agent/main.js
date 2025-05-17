@@ -1,25 +1,25 @@
 import { setup } from "./setup.js";
 import { performLogin } from "./lib/scraper/performLogin.js";
 import { getScraper } from "./lib/scraper/getScraper.js";
-import { getUserManager } from "./lib/memory/user-manager.js";
 import { startServer } from "./api/server.js";
+import { getMemoryClient } from "./lib/memory/memory-client.js";
 
 export async function startAgent() {
   try {
-    // 1. Perform setup (environment variables, etc.)
     await setup();
 
-    // 2. Initialize scraper and perform login
     const scraper = getScraper();
     const { success, message } = await performLogin(scraper);
     if (!success) {
       throw new Error(`Login failed: ${message}`);
     }
 
-    // 3. Register agent in memory service if not already registered
-    const userManager = getUserManager();
+    const memoryClient = getMemoryClient();
     const { userId: agentUserId, error: userError } =
-      await userManager.getOrCreateAgentUser();
+      await memoryClient.getOrCreateUser("agent", {
+        is_agent: true,
+      });
+
     if (userError) {
       throw new Error(`Failed to get/create agent user: ${userError.message}`);
     }
