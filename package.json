@@ -20,9 +20,9 @@
     "docs:generate": "node docs/index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Paolo Anzani",
   "license": "ISC",
-  "description": "",
+  "description": "x.com AI Agent System.",
   "dependencies": {
     "@ai-sdk/openai": "^1.3.22",
     "@fastify/cors": "^11.0.1",
