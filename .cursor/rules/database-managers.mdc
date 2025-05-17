@@ -1,0 +1,156 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Database Manager Modules
+
+This rule defines the structure and implementation guidelines for database manager modules that handle table-specific operations.
+
+## Structure
+
+1. File Location and Naming:
+   ```
+   src/memory/db/
+   ├── base-manager.js         # Base manager class
+   ├── users-manager.js        # Table-specific managers
+   ├── messages-manager.js
+   └── conversations-manager.js
+   ```
+
+2. Naming Convention:
+   - Files: `{table-name}-manager.js` in kebab-case
+   - Classes: `{TableName}Manager` in PascalCase
+   - Must extend `BaseManager`
+
+## Implementation Guidelines
+
+1. Class Structure:
+```javascript
+import BaseManager from "./base-manager.js";
+
+/**
+ * Manager for {table}-related database operations.
+ * @class {Table}Manager
+ * @extends BaseManager
+ */
+class {Table}Manager extends BaseManager {
+  // Methods here
+}
+
+export default {Table}Manager;
+```
+
+2. Method Requirements:
+   - Each public method must be async
+   - Must include JSDoc documentation
+   - Should use query files from SQL directory
+   - Must use `loadAndValidateQuery` from BaseManager
+   - Return format: `{data: Result|null, error: Error|null}`
+
+3. Creating from Drizzle Schema:
+   - Each manager corresponds to a Drizzle schema file
+   - Example mapping:
+     ```
+     drizzle/schemas/01_users.js -> db/users-manager.js
+     drizzle/schemas/02_messages.js -> db/messages-manager.js
+     ```
+
+## Method Patterns
+
+1. Get Operations:
+```javascript
+async get{Entity}(criteria = {}) {
+  const queryName = "get_{entity}.sql";
+  const sql = await this.loadAndValidateQuery(queryName);
+  return this.query(sql, [/* params */]);
+}
+```
+
+2. Create Operations:
+```javascript
+async create{Entity}(/* params */) {
+  const sql = await this.loadAndValidateQuery("create_{entity}.sql");
+  return this.query(sql, [/* params */]);
+}
+```
+
+3. Update Operations:
+```javascript
+async update{Entity}(id, /* params */) {
+  const sql = await this.loadAndValidateQuery("update_{entity}.sql");
+  return this.query(sql, [/* params */, id]);
+}
+```
+
+4. Delete Operations:
+```javascript
+async delete{Entity}(id) {
+  const sql = await this.loadAndValidateQuery("delete_{entity}.sql");
+  return this.query(sql, [id]);
+}
+```
+
+## Transaction Pattern
+
+For operations requiring multiple queries:
+
+```javascript
+async complexOperation(/* params */) {
+  return this.transaction(async (client) => {
+    // Multiple queries here using client
+    const sql1 = await this.loadAndValidateQuery("query1.sql");
+    const result1 = await client.query(sql1, [/* params */]);
+    
+    const sql2 = await this.loadAndValidateQuery("query2.sql");
+    const result2 = await client.query(sql2, [/* params */]);
+    
+    return finalResult;
+  });
+}
+```
+
+## Examples
+
+### ✅ Good Implementation
+
+```javascript
+class UsersManager extends BaseManager {
+  /**
+   * Gets a user by ID.
+   * @async
+   * @param {string} id - User ID
+   * @returns {Promise<{data: Object|null, error: Error|null}>}
+   */
+  async getUser(id) {
+    const sql = await this.loadAndValidateQuery("get_user.sql");
+    return this.query(sql, [id]);
+  }
+}
+```
+
+### ❌ Bad Implementation
+
+```javascript
+class UsersManager extends BaseManager {
+  // Missing documentation
+  // Not using loadAndValidateQuery
+  async getUser(id) {
+    const sql = "SELECT * FROM users WHERE id = $1";
+    return this.query(sql, [id]);
+  }
+}
+```
+
+## Checklist
+
+Before committing a new manager:
+
+- [ ] Extends BaseManager
+- [ ] All public methods are async
+- [ ] Complete JSDoc documentation
+- [ ] Uses SQL query files
+- [ ] Proper error handling
+- [ ] Follows naming conventions
+- [ ] Transaction usage for multi-query operations
+- [ ] Return format consistency
