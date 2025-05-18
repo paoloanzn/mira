@@ -152,14 +152,33 @@ class MessageRoute extends Route {
 
       // Generate and stream AI response
       let aiResponse = "";
-      const { steps, error: generateError } = await generateText(
+      const { error: generateError } = await generateText(
         template,
         ModelProvider.OPENAI,
-        (textPart) => {
-          aiResponse += textPart;
-          responseStream.write(
-            `data: ${JSON.stringify({ text: textPart })}\n\n`,
-          );
+        ({chunk}) => {
+          switch(chunk.type){
+            case "text-delta":
+              aiResponse += chunk.textDelta;
+              responseStream.write(
+                `0:"${chunk.textDelta}"\n`,
+              );
+              break;
+            case "tool-call-streaming-part":
+              responseStream.write(
+                `b:${JSON.stringify({toolCallId: chunk.toolCallId, toolName: chunk.toolName})}\n`,
+              )
+              break;
+            case "tool-call":
+              responseStream.write(
+                `9:${JSON.stringify({toolCallId: chunk.toolCallId, toolName: chunk.toolName, args: chunk.args})}\n`,
+              )
+            case "tool-result":
+              responseStream.write(
+                `a:${JSON.stringify({toolCallId: chunk.toolCallId, result: chunk.result})}\n`,
+              )
+              default:
+                break;
+          }
         },
         ModelType.MEDIUM,
         tools,
@@ -180,7 +199,6 @@ class MessageRoute extends Route {
         throw new Error(`Failed to save AI response: ${saveError.message}`);
       }
 
-      console.log("STEPS:", JSON.stringify(steps, null, 2));
     } catch (error) {
       console.error("Error processing message:", error);
       if (!responseStream.writableEnded) {

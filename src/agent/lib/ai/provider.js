@@ -66,23 +66,20 @@ const defaultConfig = Object.freeze({
 });
 
 /**
- * Handles the streaming of text from the AI model
+ * Handles the streaming of data from the AI model
  * @private
  * @async
- * @param {AsyncIterator} textStream - The text stream to process
+ * @param {AsyncIterator} fullStream - The stream to process
  * @param {function} [streamCallback] - Optional callback for streaming chunks
- * @returns {Promise<string>} The complete generated text
+ * @returns {Promise<void>}
  */
-async function handleTextStream(textStream, streamCallback = null) {
-  let result = "";
+async function handleTextStream(fullStream, streamCallback = null) {
   try {
-    for await (const textPart of textStream) {
+    for await (const chunk of fullStream) {
       if (streamCallback) {
-        streamCallback(textPart);
+        streamCallback({chunk});
       }
-      result += textPart;
     }
-    return result;
   } catch (error) {
     throw new AIGenerationError(
       "Error during text stream processing",
@@ -130,7 +127,8 @@ export async function generateText(
             compatibility: "strict",
           });
 
-          const { textStream, steps } = await streamText({
+          const { text, fullStream } = await streamText({
+            toolCallStreaming: true,
             model: openai(Models[provider][modelSize]),
             prompt,
             tools,
@@ -138,8 +136,9 @@ export async function generateText(
             ...defaultConfig,
           });
 
-          const result = await handleTextStream(textStream, streamCallback);
-          return { data: result, steps, error: null };
+          await handleTextStream(fullStream, streamCallback)
+
+          return { data: text, error: null };
         } catch (error) {
           // Convert known error types to AIGenerationError
           if (error instanceof AIGenerationError) {
