@@ -60,6 +60,17 @@ function execCommand(command) {
   }
 }
 
+async function checkAndRunMigrations() {
+  const spinner = ora("Checking database migrations...").start();
+  try {
+    await runMigrations();
+    spinner.succeed("✅ Database is up to date");
+  } catch (error) {
+    spinner.fail(`❌ Migration failed: ${error.message}`);
+    process.exit(1);
+  }
+}
+
 program
   .name(packageJson.name)
   .description("CLI to manage the Mira Agent system")
@@ -70,10 +81,14 @@ program
   .description("Start the Mira Agent system")
   .option("-f, --foreground", "Run in foreground mode (non-detached)")
   .option("-d, --db", "Run only the database service")
-  .action((options) => {
+  .option("--skip-migrations", "Skip running migrations on startup")
+  .action(async (options) => {
     const detachFlag = options.foreground ? "" : "-d";
     const service = options.db ? "db" : "";
     execCommand(`docker-compose up --build ${detachFlag} ${service}`);
+    if (!options.skipMigrations) {
+      await checkAndRunMigrations();
+    }
   });
 
 program
