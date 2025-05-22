@@ -233,6 +233,131 @@ export const getProfile = tool({
   },
 });
 
+export const getTrends = tool({
+  description: "Get current Twitter trends.",
+  parameters: z.object({}),
+  execute: async () => {
+    const scraper = getScraper();
+    return await scraper.getTrends();
+  },
+});
+
+export const getListTweets = tool({
+  description: "Get tweets from a specific Twitter list.",
+  parameters: z.object({
+    listId: z.string().min(1).describe("Twitter list ID to fetch tweets from"),
+    maxTweets: z
+      .number()
+      .optional()
+      .default(20)
+      .describe("Maximum number of tweets to fetch (max 100)"),
+  }),
+  execute: async ({ listId, maxTweets }) => {
+    const scraper = getScraper();
+    const limit = Math.min(maxTweets, MAX_TWEETS_LIMIT);
+    const tweetsIterator = scraper.fetchListTweets(listId, limit);
+    return await collectIteratorResults(tweetsIterator, limit);
+  },
+});
+
+export const getHomeTimeline = tool({
+  description: "Get tweets from the home timeline.",
+  parameters: z.object({
+    maxTweets: z
+      .number()
+      .optional()
+      .default(20)
+      .describe("Maximum number of tweets to fetch (max 100)"),
+    seenTweetIds: z
+      .array(z.string())
+      .optional()
+      .default([])
+      .describe("Array of tweet IDs that have already been seen"),
+  }),
+  execute: async ({ maxTweets, seenTweetIds }) => {
+    const scraper = getScraper();
+    const limit = Math.min(maxTweets, MAX_TWEETS_LIMIT);
+    return await scraper.fetchHomeTimeline(limit, seenTweetIds);
+  },
+});
+
+export const sendTweet = tool({
+  description: "Send a new tweet.",
+  parameters: z.object({
+    text: z.string().min(1).describe("Text content of the tweet"),
+  }),
+  execute: async ({ text }) => {
+    const scraper = getScraper();
+    return await scraper.sendTweet(text);
+  },
+});
+
+export const sendQuoteTweet = tool({
+  description: "Send a quote tweet.",
+  parameters: z.object({
+    text: z.string().min(1).describe("Text content of the quote tweet"),
+    tweetId: z.string().min(1).describe("ID of the tweet being quoted"),
+  }),
+  execute: async ({ text, tweetId }) => {
+    const scraper = getScraper();
+    return await scraper.sendQuoteTweet(text, tweetId);
+  },
+});
+
+export const retweet = tool({
+  description: "Retweet a specific tweet.",
+  parameters: z.object({
+    tweetId: z.string().min(1).describe("ID of the tweet to retweet"),
+  }),
+  execute: async ({ tweetId }) => {
+    const scraper = getScraper();
+    return await scraper.retweet(tweetId);
+  },
+});
+
+export const likeTweet = tool({
+  description: "Like a specific tweet.",
+  parameters: z.object({
+    tweetId: z.string().min(1).describe("ID of the tweet to like"),
+  }),
+  execute: async ({ tweetId }) => {
+    const scraper = getScraper();
+    return await scraper.likeTweet(tweetId);
+  },
+});
+
+export const getDirectMessageConversations = tool({
+  description: "Get direct message conversations.",
+  parameters: z.object({
+    cursor: z
+      .string()
+      .optional()
+      .describe("Pagination cursor for fetching more conversations"),
+  }),
+  execute: async ({ cursor }) => {
+    const scraper = getScraper();
+    return await scraper.getDirectMessageConversations("", cursor);
+  },
+});
+
+export const sendDirectMessage = tool({
+  description: "Send a direct message to a user.",
+  parameters: z.object({
+    recipientUsername: z
+      .string()
+      .min(1)
+      .describe("Username of the recipient"),
+    text: z.string().min(1).describe("Text content of the message"),
+  }),
+  execute: async ({ recipientUsername, text }) => {
+    const scraper = getScraper();
+    const recipientProfile = await scraper.getProfile(recipientUsername);
+    const myProfile = await scraper.me();
+    const conversationId = `${recipientProfile.userId}-${myProfile.userId}`;
+    return await scraper.sendDirectMessage(conversationId, text);
+  },
+});
+
 export const tools = {
   getUserTweets,
   getUserTweetsAndReplies,
@@ -245,4 +370,13 @@ export const tools = {
   searchProfiles,
   fetchProfileSearch,
   getProfile,
+  getTrends,
+  getListTweets,
+  getHomeTimeline,
+  sendTweet,
+  sendQuoteTweet,
+  retweet,
+  likeTweet,
+  getDirectMessageConversations,
+  sendDirectMessage,
 };
