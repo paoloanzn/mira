@@ -44,11 +44,11 @@ Edit the `.env` file.
 ## Run Mira System
 
 ```bash
-npx mira-cli start
+npx mira-cli launch
 ```
-
-## Run Migrations
+or
 
 ```bash
-npx mira-cli migrate
+npx mira-cli start # Start the agent system only without mira-ui
 ```
+
