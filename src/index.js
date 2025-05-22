@@ -203,4 +203,38 @@ program
     }
   });
 
+program
+  .command("launch")
+  .description("Start the Mira Agent system and launch the UI")
+  .option("--skip-migrations", "Skip running migrations on startup")
+  .action(async (options) => {
+    const statusChecker = new StatusChecker();
+    const spinner = ora("Checking services status...").start();
+
+    try {
+      const services = await statusChecker.getServicesStatus();
+      const { allRunning } = statusChecker.checkAllServicesRunning(services);
+
+      if (!allRunning) {
+        spinner.text = "Starting Mira Agent services...";
+        // Start services in detached mode
+        execCommand("docker-compose up --build -d");
+        
+        if (!options.skipMigrations) {
+          await checkAndRunMigrations();
+        }
+      }
+
+      spinner.succeed("✅ Services are running");
+      
+      // Launch the UI
+      spinner.start("Launching Mira UI...");
+      execCommand("npx mira-ui");
+      spinner.stop()
+    } catch (error) {
+      spinner.fail(chalk.red(`Failed to launch: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
 program.parse();
