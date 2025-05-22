@@ -67,7 +67,7 @@ async function checkAndRunMigrations() {
     spinner.succeed("✅ Database is up to date");
   } catch (error) {
     spinner.fail(`❌ Migration failed: ${error.message}`);
-    process.exit(1);
+    // process.exit(1); temporary disabled until we ensure that migrations don't fail when db is already been created
   }
 }
 
