@@ -117,7 +117,7 @@ class MessageRoute extends Route {
               case "text-delta":
                 aiResponse += chunk.textDelta;
                 responseStream.write(
-                  `0:"${chunk.textDelta.replace(/\n/g, '\\n')}"\n`,
+                  `0:"${chunk.textDelta.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"\n`,
                 );
                 break;
               case "tool-call-streaming-part":
