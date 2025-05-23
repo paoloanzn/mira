@@ -20,7 +20,7 @@ export const messages = p.pgTable("messages", {
     .uuid("user_id")
     .references(() => users.id, { onDelete: "cascade" }),
   content: p.text("content").notNull(),
-  embedding: vector(1536)("embedding"),
+  embedding: vector(384)("embedding"),
   created_at: p.timestamp("created_at", { withTimezone: true }).defaultNow(),
   updated_at: p.timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });

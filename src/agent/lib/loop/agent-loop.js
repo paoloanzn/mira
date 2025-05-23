@@ -56,28 +56,28 @@ export class AgentLoop {
     if (typeof task !== "string" || !task.trim()) {
       throw new AIGenerationError(
         "Task must be a non-empty string",
-        ErrorType.VALIDATION
+        ErrorType.VALIDATION,
       );
     }
 
     if (typeof runtime !== "function") {
       throw new AIGenerationError(
         "Runtime must be a function",
-        ErrorType.VALIDATION
+        ErrorType.VALIDATION,
       );
     }
 
     if (typeof onSuccess !== "function") {
       throw new AIGenerationError(
         "onSuccess must be a function",
-        ErrorType.VALIDATION
+        ErrorType.VALIDATION,
       );
     }
 
     if (onError !== null && typeof onError !== "function") {
       throw new AIGenerationError(
         "onError must be a function or null",
-        ErrorType.VALIDATION
+        ErrorType.VALIDATION,
       );
     }
 
@@ -138,7 +138,7 @@ export class AgentLoop {
         throw new AIGenerationError(
           `Loop execution failed: ${error.message}`,
           ErrorType.API_ERROR,
-          error
+          error,
         );
       }
     }

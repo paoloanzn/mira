@@ -77,7 +77,7 @@ async function handleTextStream(fullStream, streamCallback = null) {
   try {
     for await (const chunk of fullStream) {
       if (streamCallback) {
-        streamCallback({chunk});
+        streamCallback({ chunk });
       }
     }
   } catch (error) {
@@ -136,7 +136,7 @@ export async function generateText(
             ...defaultConfig,
           });
 
-          await handleTextStream(fullStream, streamCallback)
+          await handleTextStream(fullStream, streamCallback);
 
           return { data: text, error: null };
         } catch (error) {

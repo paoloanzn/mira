@@ -15,6 +15,13 @@
       "when": 1747478991121,
       "tag": "0001_motionless_wallop",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1748004618895,
+      "tag": "0002_lean_proemial_gods",
+      "breakpoints": true
     }
   ]
 }

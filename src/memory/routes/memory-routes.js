@@ -201,6 +201,12 @@ const routes = [
         properties: {
           userId: { type: "string", format: "uuid" },
           content: { type: "string", minLength: 1 },
+          embedding: {
+            type: "array",
+            items: { type: "number" },
+            minItems: 384,
+            maxItems: 384,
+          },
         },
         required: ["userId", "content"],
       },
@@ -215,11 +221,12 @@ const routes = [
     },
     handler: async (request, reply) => {
       const { conversationId } = request.params;
-      const { userId, content } = request.body;
+      const { userId, content, embedding } = request.body;
       const { data, error } = await messagesManager.createMessage(
         conversationId,
         userId,
         content,
+        embedding,
       );
       if (error) {
         reply.status(500).send({ error: error.message });
@@ -246,8 +253,8 @@ const routes = [
           embedding: {
             type: "array",
             items: { type: "number" },
-            minItems: 1536,
-            maxItems: 1536,
+            minItems: 384,
+            maxItems: 384,
           },
         },
         required: ["embedding"],
