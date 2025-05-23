@@ -204,6 +204,36 @@ program
   });
 
 program
+  .command("db-monitor")
+  .description("Monitor PostgreSQL database status")
+  .action(async () => {
+    const spinner = ora("Checking database status...").start();
+    const client = new Client(DEFAULT_DB_CONFIG);
+
+    try {
+      await client.connect();
+      spinner.text = "Fetching database information...";
+
+      const { rows: dbSize } = await client.query(
+        "SELECT pg_size_pretty(pg_database_size(current_database())) as size;",
+      );
+      console.log(`\nDatabase size: ${dbSize[0].size}`);
+
+      const { rows: connections } = await client.query(
+        "SELECT count(*) FROM pg_stat_activity WHERE datname = current_database();",
+      );
+      console.log(`Active connections: ${connections[0].count}`);
+
+      spinner.succeed("✅ Database status checked successfully.");
+    } catch (error) {
+      spinner.fail(`❌ Failed to monitor database: ${error.message}`);
+      process.exit(1);
+    } finally {
+      await client.end();
+    }
+  });
+
+program
   .command("launch")
   .description("Start the Mira Agent system and launch the UI")
   .option("--skip-migrations", "Skip running migrations on startup")
@@ -219,18 +249,18 @@ program
         spinner.text = "Starting Mira Agent services...";
         // Start services in detached mode
         execCommand("docker-compose up --build -d");
-        
+
         if (!options.skipMigrations) {
           await checkAndRunMigrations();
         }
       }
 
       spinner.succeed("✅ Services are running");
-      
+
       // Launch the UI
       spinner.start("Launching Mira UI...");
       execCommand("npx mira-ui");
-      spinner.stop()
+      spinner.stop();
     } catch (error) {
       spinner.fail(chalk.red(`Failed to launch: ${error.message}`));
       process.exit(1);
