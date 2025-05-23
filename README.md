@@ -46,9 +46,9 @@ Edit the `.env` file.
 ```bash
 npx mira-cli launch
 ```
+
 or
 
 ```bash
 npx mira-cli start # Start the agent system only without mira-ui
 ```
-

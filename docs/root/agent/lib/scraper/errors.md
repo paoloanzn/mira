@@ -6,4 +6,5 @@ Source: `src/agent/lib/scraper/errors.js`
 Provides error handling for scraper operations.module_"></a>
 
 ## scraper/errors
+
 Provides error handling for scraper operations.
