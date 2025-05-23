@@ -10,6 +10,7 @@ import { chatTemplate } from "../../lib/ai/templates.js";
 import { tools } from "../../lib/ai/tools.js";
 import Route from "../../../lib/routes/route.js";
 import { AgentLoop } from "../../lib/loop/agent-loop.js";
+import { getEmbeddingManager } from "../../lib/ai/embedding.js";
 
 /**
  * Message route handler class
@@ -98,10 +99,13 @@ class MessageRoute extends Route {
         );
 
         // Compile template with conversation
-        const { template, error: templateError } = compileTemplate(chatTemplate, {
-          conversation: formattedConversation,
-          userQuery: task
-        });
+        const { template, error: templateError } = compileTemplate(
+          chatTemplate,
+          {
+            conversation: formattedConversation,
+            userQuery: task,
+          },
+        );
 
         if (templateError) {
           throw new Error(`Template compilation failed: ${templateError}`);
@@ -112,27 +116,27 @@ class MessageRoute extends Route {
         const { error: generateError } = await generateText(
           template,
           ModelProvider.OPENAI,
-          ({chunk}) => {
-            switch(chunk.type){
+          ({ chunk }) => {
+            switch (chunk.type) {
               case "text-delta":
                 aiResponse += chunk.textDelta;
                 responseStream.write(
-                  `0:"${chunk.textDelta.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n')}"\n`,
+                  `0:"${chunk.textDelta.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n")}"\n`,
                 );
                 break;
               case "tool-call-streaming-part":
                 responseStream.write(
-                  `b:${JSON.stringify({toolCallId: chunk.toolCallId, toolName: chunk.toolName})}\n`,
-                )
+                  `b:${JSON.stringify({ toolCallId: chunk.toolCallId, toolName: chunk.toolName })}\n`,
+                );
                 break;
               case "tool-call":
                 responseStream.write(
-                  `9:${JSON.stringify({toolCallId: chunk.toolCallId, toolName: chunk.toolName, args: chunk.args})}\n`,
-                )
+                  `9:${JSON.stringify({ toolCallId: chunk.toolCallId, toolName: chunk.toolName, args: chunk.args })}\n`,
+                );
               case "tool-result":
                 responseStream.write(
-                  `a:${JSON.stringify({toolCallId: chunk.toolCallId, result: chunk.result})}\n`,
-                )
+                  `a:${JSON.stringify({ toolCallId: chunk.toolCallId, result: chunk.result })}\n`,
+                );
               default:
                 break;
             }
@@ -150,10 +154,18 @@ class MessageRoute extends Route {
       },
       async (state) => {
         // Save AI response on success
+        // Generate embedding for agent response
+        const embeddingManager = getEmbeddingManager();
+        const agentEmbedding = await embeddingManager.generateEmbeddings(
+          state.result,
+        );
+
+        // Save AI response with embedding
         const { error: saveError } = await this.memoryClient.createMessage(
           conversationId,
           this.agentUserId,
           state.result,
+          agentEmbedding,
         );
         if (saveError) {
           throw new Error(`Failed to save AI response: ${saveError.message}`);
@@ -168,7 +180,7 @@ class MessageRoute extends Route {
             })}\n\n`,
           );
         }
-      }
+      },
     );
   }
 
@@ -219,20 +231,28 @@ class MessageRoute extends Route {
         );
       }
 
-      // Add user message
+      // Generate embedding for user message
+      const embeddingManager = getEmbeddingManager();
+      const userEmbedding = await embeddingManager.generateEmbeddings(content);
+
+      // Add user message with embedding
       const { error: msgError } = await this.memoryClient.createMessage(
         conversationId,
         userId,
         content,
+        userEmbedding,
       );
       if (msgError) {
         throw new Error(`Failed to create message: ${msgError.message}`);
       }
 
       // Create and execute agent loop
-      const loop = this.#createMessageLoop(content, conversationId, responseStream);
+      const loop = this.#createMessageLoop(
+        content,
+        conversationId,
+        responseStream,
+      );
       await loop.execute();
-
     } catch (error) {
       console.error("Error processing message:", error);
       if (!responseStream.writableEnded) {

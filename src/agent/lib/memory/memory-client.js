@@ -195,12 +195,14 @@ class MemoryClient {
    * @param {string} conversationId - The conversation ID
    * @param {string} userId - The user ID
    * @param {string} content - The message content
+   * @param {number[]} [embedding] - Optional embedding vector for the message
    * @returns {Promise<{data: {id: string}|null, error: Error|null}>}
    */
-  async createMessage(conversationId, userId, content) {
+  async createMessage(conversationId, userId, content, embedding = null) {
     return this._request(`/conversations/${conversationId}/messages`, "POST", {
       userId,
       content,
+      embedding,
     });
   }
 
