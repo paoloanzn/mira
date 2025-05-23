@@ -343,10 +343,7 @@ export const getDirectMessageConversations = tool({
 export const sendDirectMessage = tool({
   description: "Send a direct message to a user.",
   parameters: z.object({
-    recipientUsername: z
-      .string()
-      .min(1)
-      .describe("Username of the recipient"),
+    recipientUsername: z.string().min(1).describe("Username of the recipient"),
     text: z.string().min(1).describe("Text content of the message"),
   }),
   execute: async ({ recipientUsername, text }) => {
