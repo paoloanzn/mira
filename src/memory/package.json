@@ -1,0 +1,13 @@
+{
+    "name": "@mira-ai/memory-service",
+    "version": "0.0.3",
+    "type": "module",
+    "main": "main.js",
+    "dependencies": {
+      "@fastify/cors": "^11.0.1",
+      "drizzle-orm": "^0.43.1",
+      "fastify": "^5.3.3",
+      "pg": "^8.16.0",
+      "dotenv": "^16.5.0"
+    }
+  }

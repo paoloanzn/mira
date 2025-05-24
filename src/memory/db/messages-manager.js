@@ -23,7 +23,7 @@ class MessagesManager extends BaseManager {
       : "get_messages.sql";
 
     const params = embedding
-      ? [embedding, conversationId, limit]
+      ? [JSON.stringify(embedding), conversationId, limit]
       : [conversationId];
 
     const sql = await this.loadAndValidateQuery(queryName);
@@ -41,7 +41,7 @@ class MessagesManager extends BaseManager {
    */
   async createMessage(conversationId, userId, content, embedding = null) {
     const sql = await this.loadAndValidateQuery("create_message.sql");
-    return this.query(sql, [conversationId, userId, content, embedding]);
+    return this.query(sql, [conversationId, userId, content, JSON.stringify(embedding)]);
   }
 
   /**
@@ -53,7 +53,7 @@ class MessagesManager extends BaseManager {
    */
   async updateMessageEmbedding(messageId, embedding) {
     const sql = await this.loadAndValidateQuery("update_message_embedding.sql");
-    return this.query(sql, [embedding, messageId]);
+    return this.query(sql, [JSON.stringify(embedding), messageId]);
   }
 }
 

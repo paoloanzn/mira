@@ -143,8 +143,8 @@ const routes = [
           embedding: {
             type: "array",
             items: { type: "number" },
-            minItems: 1536,
-            maxItems: 1536,
+            minItems: 384,
+            maxItems: 384,
           },
           limit: { type: "integer", minimum: 1, maximum: 100, default: 5 },
         },
@@ -174,13 +174,16 @@ const routes = [
       const { embedding, limit } = request.query;
       const { data, error } = await messagesManager.getMessages({
         conversationId,
-        embedding,
+        embedding: embedding ? [...embedding] : null,
         limit,
       });
       if (error) {
         reply.status(500).send({ error: error.message });
         return;
       }
+      // discard embedding cause they are expected to return as an array, but db returns them as a string
+      data.pop()
+
       reply.send(data);
     },
   },
@@ -226,7 +229,7 @@ const routes = [
         conversationId,
         userId,
         content,
-        embedding,
+        [...embedding],
       );
       if (error) {
         reply.status(500).send({ error: error.message });

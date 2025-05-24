@@ -98,7 +98,7 @@ class LocalEmbeddingClient {
       const rootPath = await this.#getRootPath();
       const cacheDir = path.join(rootPath, "models-cache");
 
-      await fs.mkdir(cacheDir, { recursive: true });
+      fs.mkdirSync(cacheDir, { recursive: true });
 
       this.model = await FlagEmbedding.init({
         cacheDir,
@@ -133,7 +133,7 @@ class LocalEmbeddingClient {
     }
 
     try {
-      const embedding = this.model.queryEmbed(input);
+      const embedding = await this.model.queryEmbed(input);
       return this.#processEmbeddings(embedding);
     } catch (error) {
       throw new AIGenerationError(
@@ -177,7 +177,8 @@ class LocalEmbeddingClient {
         );
       }
 
-      finalEmbedding = finalEmbedding.map((n) => Number(n)); // Ensure numbers are plain JavaScript numbers
+      // Ensure we have a proper array of numbers
+      finalEmbedding = finalEmbedding.map((n) => Number(n));
 
       if (
         !Array.isArray(finalEmbedding) ||
@@ -197,7 +198,8 @@ class LocalEmbeddingClient {
         );
       }
 
-      return finalEmbedding;
+      // Ensure we return a proper array that will be serialized correctly
+      return [...finalEmbedding];
     } catch (error) {
       if (error instanceof AIGenerationError) {
         throw error;

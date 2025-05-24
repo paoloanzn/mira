@@ -48,6 +48,8 @@ services:
       TWITTER_COOKIES: ${TWITTER_COOKIES}
       AGENT_USER_ID: ${AGENT_USER_ID}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+    volumes:
+      - models_cache:/app/models-cache
     ports:
       - "8080:8080"
     depends_on:
@@ -56,3 +58,4 @@ services:
 
 volumes:
   postgres_data:
+  models_cache:
