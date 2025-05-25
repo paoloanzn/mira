@@ -24,10 +24,17 @@ services:
       NODE_ENV: production
       DB_URL: postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
       MEMORY_PORT: 8081
+      DEBUG: ${DEBUG}
     ports:
       - "8081:8081"
     healthcheck:
-      test: ["CMD", "curl", "http://localhost:8081/health"]
+      test:
+        [
+          "CMD",
+          "curl",
+          "curl -s -f -o /dev/null",
+          "http://localhost:8081/health",
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -48,6 +55,7 @@ services:
       TWITTER_COOKIES: ${TWITTER_COOKIES}
       AGENT_USER_ID: ${AGENT_USER_ID}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      DEBUG: ${DEBUG}
     volumes:
       - models_cache:/app/models-cache
     ports:

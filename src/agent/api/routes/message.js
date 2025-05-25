@@ -11,6 +11,7 @@ import { tools } from "../../lib/ai/tools.js";
 import Route from "../../../lib/routes/route.js";
 import { AgentLoop } from "../../lib/loop/agent-loop.js";
 import { getEmbeddingManager } from "../../lib/ai/embedding.js";
+import { logger } from "../../../lib/logger/logger.js";
 
 /**
  * Message route handler class
@@ -77,11 +78,12 @@ class MessageRoute extends Route {
    * Creates a new agent loop for message processing
    * @private
    * @param {string} content - The message content
+   * @param {number[]} embedding - Message embeddings
    * @param {string} conversationId - The conversation ID
    * @param {PassThrough} responseStream - The response stream
    * @returns {AgentLoop} The created agent loop
    */
-  #createMessageLoop(content, conversationId, responseStream) {
+  #createMessageLoop(content, embedding, conversationId, responseStream) {
     return new AgentLoop(
       `Handle the user request: ${content}`,
       async (task) => {
@@ -90,6 +92,17 @@ class MessageRoute extends Route {
           await this.memoryClient.getMessages(conversationId);
         if (historyError) {
           throw new Error(`Failed to get messages: ${historyError.message}`);
+        }
+
+        const { data: similarMessages, error: similaritySearchError } =
+          await this.memoryClient.getMessages(conversationId, {
+            embedding,
+            limit: 5,
+          });
+        if (similaritySearchError) {
+          throw new Error(
+            `Failed to get similarity search results from messages: ${similaritySearchError.message}`,
+          );
         }
 
         // Format conversation for template
@@ -104,8 +117,12 @@ class MessageRoute extends Route {
           {
             conversation: formattedConversation,
             userQuery: task,
+            similarMessages:
+              this.memoryClient.formatConversation(similarMessages),
           },
         );
+
+        logger.debug(template);
 
         if (templateError) {
           throw new Error(`Template compilation failed: ${templateError}`);
@@ -249,6 +266,7 @@ class MessageRoute extends Route {
       // Create and execute agent loop
       const loop = this.#createMessageLoop(
         content,
+        userEmbedding,
         conversationId,
         responseStream,
       );

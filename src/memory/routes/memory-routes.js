@@ -2,6 +2,7 @@ import Route from "../../lib/routes/route.js";
 import UsersManager from "../db/users-manager.js";
 import ConversationsManager from "../db/conversations-manager.js";
 import MessagesManager from "../db/messages-manager.js";
+import { logger } from "../../lib/logger/logger.js";
 
 const memoryRoute = new Route("/memory");
 const usersManager = new UsersManager();
@@ -171,18 +172,33 @@ const routes = [
     },
     handler: async (request, reply) => {
       const { conversationId } = request.params;
-      const { embedding, limit } = request.query;
+      logger.debug(request, request.query);
+      const { "embedding[]": embedding, limit } = request.query;
+      logger.debug(embedding);
       const { data, error } = await messagesManager.getMessages({
         conversationId,
-        embedding: embedding ? [...embedding] : null,
+        embedding: embedding
+          ? [...embedding.map((embedding) => parseFloat(embedding))]
+          : null,
         limit,
       });
       if (error) {
         reply.status(500).send({ error: error.message });
         return;
       }
-      // discard embedding cause they are expected to return as an array, but db returns them as a string
-      data.pop()
+
+      let parsedEmebedding = [];
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].embedding && typeof data[i].embedding === "string") {
+          // remove '[' and ']' and split by , into single values
+          for (let value of data[i].embedding
+            .substring(1, data[i].embedding.length - 1)
+            .split(",")) {
+            parsedEmebedding.push(parseFloat(value));
+          }
+          data[i].embedding = parsedEmebedding;
+        }
+      }
 
       reply.send(data);
     },

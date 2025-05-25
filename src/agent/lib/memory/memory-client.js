@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+import { logger } from "../../../lib/logger/logger.js";
 
 /**
  * Client for interacting with the memory service.
@@ -44,12 +45,13 @@ class MemoryClient {
       url += `?${params.toString()}`;
     }
 
-    console.log(
+    logger.info(
       `[${new Date().toISOString()}] [Request ${requestId}] Sending request:`,
     );
-    console.log(`URL: ${url}`);
-    console.log(`Method: ${method}`);
-    console.log("Body:", body);
+    logger.info(`URL: ${url}`);
+    logger.info(`Method: ${method}`);
+    logger.info("Body:", body);
+    logger.info("QueryParams", queryParams);
 
     try {
       const response = await fetch(url, {

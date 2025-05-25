@@ -62,6 +62,11 @@ Next, I will retweet the tweet with ID 1793310000000000002.
 RESULT: Tweet retweeted successfully.
 Task complete.
 
+# RAG (Retrieval-Augmented Generation) MESSAGES
+\`\`\`
+{{ similarMessages }}
+\`\`\`
+
 # CURRENT CONVERSATION HISTORY
 \`\`\`
 {{ conversation }}

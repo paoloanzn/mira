@@ -40,7 +40,7 @@ const corsOriginPolicy = (origin, cb) => {
 const start = async () => {
   dotenv.config();
   const fastify = Fastify({
-    logger: true, //process.env.NODE_ENV === "development",
+    logger: { level: "error" }, //process.env.NODE_ENV === "development",
   });
 
   // Register CORS

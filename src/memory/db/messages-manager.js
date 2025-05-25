@@ -41,7 +41,12 @@ class MessagesManager extends BaseManager {
    */
   async createMessage(conversationId, userId, content, embedding = null) {
     const sql = await this.loadAndValidateQuery("create_message.sql");
-    return this.query(sql, [conversationId, userId, content, JSON.stringify(embedding)]);
+    return this.query(sql, [
+      conversationId,
+      userId,
+      content,
+      JSON.stringify(embedding),
+    ]);
   }
 
   /**

@@ -173,7 +173,8 @@ program
 program
   .command("reset")
   .description("Reset the database (warning: this will delete all data)")
-  .action(async () => {
+  .option("-s, --skip-migrations", "Reset without running migrations")
+  .action(async (options) => {
     const spinner = ora("Resetting database...").start();
     try {
       // Stop all services
@@ -192,11 +193,9 @@ program
       spinner.text = "Waiting for database to be ready...";
       await new Promise((resolve) => setTimeout(resolve, 5000));
 
-      spinner.succeed(
-        chalk.green(
-          "Database reset successfully. Run migrations separately with `mira-cli migrate`",
-        ),
-      );
+      if (!options.skipMigrations) await checkAndRunMigrations();
+
+      spinner.succeed(chalk.green("Database reset successfully."));
     } catch (error) {
       spinner.fail(chalk.red(`Failed to reset database: ${error.message}`));
       process.exit(1);
