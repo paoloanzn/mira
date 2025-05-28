@@ -58,6 +58,7 @@ services:
       DEBUG: ${DEBUG}
     volumes:
       - models_cache:/app/models-cache
+      - agent_config:/app/config
     ports:
       - "8080:8080"
     depends_on:
@@ -67,3 +68,4 @@ services:
 volumes:
   postgres_data:
   models_cache:
+  agent_config:

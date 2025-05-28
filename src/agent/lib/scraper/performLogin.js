@@ -4,11 +4,7 @@ import {
   ScraperCredentialsError,
   ScraperCookieError,
 } from "./errors.js";
-import { updateEnvVariable } from "../utils/envManager.js";
-import dotenv from "dotenv";
-
-// Load environment variables
-dotenv.config();
+import { updateEnvVariable } from "../../../lib/utils/envManager.js";
 
 /**
  * @typedef {Object} LoginResult

@@ -24,11 +24,11 @@ export class CustomBaseError extends Error {
  * @enum {string}
  */
 export const ErrorType = Object.freeze({
-  VALIDATION: 'validation',
-  NETWORK: 'network',
-  BUSINESS_LOGIC: 'business_logic',
-  EXTERNAL_SERVICE: 'external_service',
-  UNKNOWN: 'unknown',
+  VALIDATION: "validation",
+  NETWORK: "network",
+  BUSINESS_LOGIC: "business_logic",
+  EXTERNAL_SERVICE: "external_service",
+  UNKNOWN: "unknown",
 });
 
 /**
@@ -73,4 +73,4 @@ export class ExternalServiceError extends CustomBaseError {
   constructor(message, originalError = null) {
     super(message, ErrorType.EXTERNAL_SERVICE, originalError);
   }
-} 
+}

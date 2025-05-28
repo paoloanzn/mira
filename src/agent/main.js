@@ -8,6 +8,19 @@ export async function startAgent() {
   try {
     await setup();
 
+    console.log(
+      `Current config:\n${JSON.stringify(
+        {
+          twitterUsername: process.env.TWITTER_USERNAME,
+          twitterPassword: process.env.TWITTER_PASSWORD,
+          twitterEmail: process.env.TWITTER_EMAIL,
+          openaiKey: process.env.OPENAI_API_KEY,
+        },
+        null,
+        2,
+      )}`,
+    );
+
     const scraper = getScraper();
     const { success, message } = await performLogin(scraper);
     if (!success) {

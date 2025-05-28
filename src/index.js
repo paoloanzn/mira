@@ -9,6 +9,8 @@ import chalk from "chalk";
 import packageJson from "../package.json" with { type: "json" };
 import { StatusChecker } from "./lib/status/status-checker.js";
 import path from "path";
+import { updateEnvVariable, getEnvVariable } from "./lib/utils/envManager.js";
+import readline from "readline";
 
 // Load environment variables
 dotenv.config();
@@ -262,6 +264,85 @@ program
       spinner.stop();
     } catch (error) {
       spinner.fail(chalk.red(`Failed to launch: ${error.message}`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command("config")
+  .description("Configure environment variables")
+  .action(async () => {
+    const spinner = ora("Loading current configuration...").start();
+    try {
+      // Get current values
+      const currentValues = {
+        OPENAI_API_KEY: await getEnvVariable("OPENAI_API_KEY"),
+        TWITTER_USERNAME: await getEnvVariable("TWITTER_USERNAME"),
+        TWITTER_EMAIL: await getEnvVariable("TWITTER_EMAIL"),
+        TWITTER_PASSWORD: await getEnvVariable("TWITTER_PASSWORD"),
+      };
+
+      spinner.succeed("Current configuration loaded");
+
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+
+      // Prompt for each variable
+      const questions = [
+        {
+          key: "OPENAI_API_KEY",
+          message: "Enter your OpenAI API key",
+          current: currentValues.OPENAI_API_KEY,
+        },
+        {
+          key: "TWITTER_USERNAME",
+          message: "Enter your Twitter username",
+          current: currentValues.TWITTER_USERNAME,
+        },
+        {
+          key: "TWITTER_EMAIL",
+          message: "Enter your Twitter email",
+          current: currentValues.TWITTER_EMAIL,
+        },
+        {
+          key: "TWITTER_PASSWORD",
+          message: "Enter your Twitter password",
+          current: currentValues.TWITTER_PASSWORD,
+          isPassword: true,
+        },
+      ];
+
+      const askQuestion = (prompt) => {
+        return new Promise((resolve) => {
+          rl.question(prompt, (input) => {
+            resolve(input.trim());
+          });
+        });
+      };
+
+      for (const question of questions) {
+        const prompt = question.current
+          ? `${question.message} (current: ${question.isPassword ? "********" : question.current}) [press Enter to keep current value]: `
+          : `${question.message}: `;
+
+        const answer = await askQuestion(prompt);
+
+        if (answer || !question.current) {
+          await updateEnvVariable(question.key, answer);
+          console.log(chalk.green(`✓ ${question.key} updated`));
+        } else {
+          console.log(chalk.blue(`ℹ ${question.key} unchanged`));
+        }
+      }
+
+      rl.close();
+      console.log(chalk.green("\n✓ Configuration updated successfully"));
+    } catch (error) {
+      spinner.fail(
+        chalk.red(`Failed to update configuration: ${error.message}`),
+      );
       process.exit(1);
     }
   });
