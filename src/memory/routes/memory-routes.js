@@ -324,7 +324,8 @@ const routes = [
     },
     handler: async (request, reply) => {
       const { userId } = request.query;
-      const { data, error } = await conversationsManager.getConversations(userId);
+      const { data, error } =
+        await conversationsManager.getConversations(userId);
       if (error) {
         reply.status(500).send({ error: error.message });
         return;
@@ -352,7 +353,8 @@ const routes = [
     },
     handler: async (request, reply) => {
       const { conversationId } = request.params;
-      const { error } = await conversationsManager.deleteConversation(conversationId);
+      const { error } =
+        await conversationsManager.deleteConversation(conversationId);
       if (error) {
         reply.status(500).send({ error: error.message });
         return;

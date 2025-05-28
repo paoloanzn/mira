@@ -111,7 +111,7 @@ class ConversationRoute extends Route {
           },
         },
         handler: this.handleDeleteConversation.bind(this),
-      }
+      },
     );
   }
 
@@ -124,23 +124,25 @@ class ConversationRoute extends Route {
   async handleGetConversations(request, reply) {
     try {
       const hostname = request.hostname;
-      const { userId, error: userError } = await this.memoryClient.getOrCreateUser(hostname);
+      const { userId, error: userError } =
+        await this.memoryClient.getOrCreateUser(hostname);
 
       if (userError) {
         throw new CustomBaseError(
           `Failed to get/create user: ${userError.message}`,
           ErrorType.BUSINESS_LOGIC,
-          userError
+          userError,
         );
       }
 
-      const { data: conversations, error: convError } = await this.memoryClient.getConversations(userId);
+      const { data: conversations, error: convError } =
+        await this.memoryClient.getConversations(userId);
 
       if (convError) {
         throw new CustomBaseError(
           `Failed to get conversations: ${convError.message}`,
           ErrorType.BUSINESS_LOGIC,
-          convError
+          convError,
         );
       }
 
@@ -152,7 +154,7 @@ class ConversationRoute extends Route {
       throw new CustomBaseError(
         "Failed to get conversations",
         ErrorType.UNKNOWN,
-        error
+        error,
       );
     }
   }
@@ -166,23 +168,25 @@ class ConversationRoute extends Route {
   async handleCreateConversation(request, reply) {
     try {
       const hostname = request.hostname;
-      const { userId, error: userError } = await this.memoryClient.getOrCreateUser(hostname);
+      const { userId, error: userError } =
+        await this.memoryClient.getOrCreateUser(hostname);
 
       if (userError) {
         throw new CustomBaseError(
           `Failed to get/create user: ${userError.message}`,
           ErrorType.BUSINESS_LOGIC,
-          userError
+          userError,
         );
       }
 
-      const { data, error: convError } = await this.memoryClient.createConversation([userId, this.agentUserId]);
+      const { data, error: convError } =
+        await this.memoryClient.createConversation([userId, this.agentUserId]);
 
       if (convError) {
         throw new CustomBaseError(
           `Failed to create conversation: ${convError.message}`,
           ErrorType.BUSINESS_LOGIC,
-          convError
+          convError,
         );
       }
 
@@ -194,7 +198,7 @@ class ConversationRoute extends Route {
       throw new CustomBaseError(
         "Failed to create conversation",
         ErrorType.UNKNOWN,
-        error
+        error,
       );
     }
   }
@@ -208,13 +212,14 @@ class ConversationRoute extends Route {
   async handleDeleteConversation(request, reply) {
     try {
       const { conversationId } = request.params;
-      const { error } = await this.memoryClient.deleteConversation(conversationId);
+      const { error } =
+        await this.memoryClient.deleteConversation(conversationId);
 
       if (error) {
         throw new CustomBaseError(
           `Failed to delete conversation: ${error.message}`,
           ErrorType.BUSINESS_LOGIC,
-          error
+          error,
         );
       }
 
@@ -226,10 +231,10 @@ class ConversationRoute extends Route {
       throw new CustomBaseError(
         "Failed to delete conversation",
         ErrorType.UNKNOWN,
-        error
+        error,
       );
     }
   }
 }
 
-export default ConversationRoute; 
+export default ConversationRoute;

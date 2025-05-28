@@ -123,7 +123,7 @@ class MessageRoute extends Route {
           },
         },
         handler: this.handleMessage.bind(this),
-      }
+      },
     );
   }
 
@@ -136,13 +136,14 @@ class MessageRoute extends Route {
   async handleGetMessages(request, reply) {
     try {
       const { conversationId } = request.params;
-      const { data: messages, error } = await this.memoryClient.getMessages(conversationId);
+      const { data: messages, error } =
+        await this.memoryClient.getMessages(conversationId);
 
       if (error) {
         throw new CustomBaseError(
           `Failed to get messages: ${error.message}`,
           ErrorType.BUSINESS_LOGIC,
-          error
+          error,
         );
       }
 
@@ -154,7 +155,7 @@ class MessageRoute extends Route {
       throw new CustomBaseError(
         "Failed to get messages",
         ErrorType.UNKNOWN,
-        error
+        error,
       );
     }
   }
@@ -179,7 +180,7 @@ class MessageRoute extends Route {
           throw new CustomBaseError(
             `Failed to get messages: ${historyError.message}`,
             ErrorType.BUSINESS_LOGIC,
-            historyError
+            historyError,
           );
         }
 
@@ -192,7 +193,7 @@ class MessageRoute extends Route {
           throw new CustomBaseError(
             `Failed to get similarity search results from messages: ${similaritySearchError.message}`,
             ErrorType.BUSINESS_LOGIC,
-            similaritySearchError
+            similaritySearchError,
           );
         }
 
@@ -218,7 +219,7 @@ class MessageRoute extends Route {
         if (templateError) {
           throw new CustomBaseError(
             `Template compilation failed: ${templateError}`,
-            ErrorType.BUSINESS_LOGIC
+            ErrorType.BUSINESS_LOGIC,
           );
         }
 
@@ -261,7 +262,7 @@ class MessageRoute extends Route {
           throw new CustomBaseError(
             `Text generation failed: ${generateError}`,
             ErrorType.BUSINESS_LOGIC,
-            generateError
+            generateError,
           );
         }
 
@@ -286,7 +287,7 @@ class MessageRoute extends Route {
           throw new CustomBaseError(
             `Failed to save AI response: ${saveError.message}`,
             ErrorType.BUSINESS_LOGIC,
-            saveError
+            saveError,
           );
         }
       },
@@ -315,10 +316,7 @@ class MessageRoute extends Route {
     const hostname = request.hostname;
 
     if (!content) {
-      throw new CustomBaseError(
-        "Missing content",
-        ErrorType.VALIDATION
-      );
+      throw new CustomBaseError("Missing content", ErrorType.VALIDATION);
     }
 
     // Set SSE headers for streaming
@@ -338,7 +336,7 @@ class MessageRoute extends Route {
         throw new CustomBaseError(
           `Failed to get/create user: ${userError.message}`,
           ErrorType.BUSINESS_LOGIC,
-          userError
+          userError,
         );
       }
 
@@ -357,7 +355,7 @@ class MessageRoute extends Route {
         throw new CustomBaseError(
           `Failed to create message: ${msgError.message}`,
           ErrorType.BUSINESS_LOGIC,
-          msgError
+          msgError,
         );
       }
 
@@ -374,7 +372,10 @@ class MessageRoute extends Route {
       if (!responseStream.writableEnded) {
         responseStream.write(
           `event: error\ndata: ${JSON.stringify({
-            message: error instanceof CustomBaseError ? error.message : "Internal server error",
+            message:
+              error instanceof CustomBaseError
+                ? error.message
+                : "Internal server error",
           })}\n\n`,
         );
       }

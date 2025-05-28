@@ -55,13 +55,14 @@ class UserRoute extends Route {
   async handleGetUser(request, reply) {
     try {
       const hostname = request.hostname;
-      const { userId, error } = await this.memoryClient.getOrCreateUser(hostname);
+      const { userId, error } =
+        await this.memoryClient.getOrCreateUser(hostname);
 
       if (error) {
         throw new CustomBaseError(
           `Failed to get/create user: ${error.message}`,
           ErrorType.BUSINESS_LOGIC,
-          error
+          error,
         );
       }
 
@@ -70,13 +71,9 @@ class UserRoute extends Route {
       if (error instanceof CustomBaseError) {
         throw error;
       }
-      throw new CustomBaseError(
-        "Failed to get user",
-        ErrorType.UNKNOWN,
-        error
-      );
+      throw new CustomBaseError("Failed to get user", ErrorType.UNKNOWN, error);
     }
   }
 }
 
-export default UserRoute; 
+export default UserRoute;
