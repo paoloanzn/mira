@@ -1,6 +1,8 @@
 import Fastify from "fastify";
 import MessageRoute from "./routes/message.js";
 import HealthRoute from "./routes/health.js";
+import ConversationRoute from "./routes/conversation.js";
+import UserRoute from "./routes/user.js";
 
 const serverConfig = {
   port: process.env.AGENT_PORT || 8080,
@@ -20,9 +22,13 @@ export async function startServer(agentUserId) {
     // Register routes
     const messageRoute = new MessageRoute(agentUserId);
     const healthRoute = new HealthRoute();
+    const conversationRoute = new ConversationRoute(agentUserId);
+    const userRoute = new UserRoute();
 
     messageRoute.register(fastify);
     healthRoute.register(fastify);
+    conversationRoute.register(fastify);
+    userRoute.register(fastify);
 
     // Start server
     await fastify.listen(serverConfig);

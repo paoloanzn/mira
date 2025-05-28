@@ -35,6 +35,36 @@ class ConversationsManager extends BaseManager {
       return conversation;
     });
   }
+
+  /**
+   * Gets all conversations for a user.
+   * @async
+   * @param {string} userId - The user ID to get conversations for
+   * @returns {Promise<{data: Array|null, error: Error|null}>}
+   */
+  async getConversations(userId) {
+    try {
+      const sql = await this.loadAndValidateQuery("get_conversations.sql");
+      return await this.query(sql, [userId]);
+    } catch (error) {
+      return { data: null, error };
+    }
+  }
+
+  /**
+   * Deletes a conversation and all its related data.
+   * @async
+   * @param {string} conversationId - The ID of the conversation to delete
+   * @returns {Promise<{data: null, error: Error|null}>}
+   */
+  async deleteConversation(conversationId) {
+    try {
+      const sql = await this.loadAndValidateQuery("delete_conversation.sql");
+      return await this.query(sql, [conversationId]);
+    } catch (error) {
+      return { data: null, error };
+    }
+  }
 }
 
 export default ConversationsManager;

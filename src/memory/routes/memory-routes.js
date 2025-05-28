@@ -293,6 +293,73 @@ const routes = [
       reply.status(204).send();
     },
   },
+  {
+    method: "GET",
+    url: "/conversations",
+    schema: {
+      description: "Get all conversations for a user",
+      querystring: {
+        type: "object",
+        required: ["userId"],
+        properties: {
+          userId: { type: "string", format: "uuid" },
+        },
+      },
+      response: {
+        200: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string", format: "uuid" },
+              created_at: { type: "string", format: "date-time" },
+              user_ids: {
+                type: "array",
+                items: { type: "string", format: "uuid" },
+              },
+            },
+          },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const { userId } = request.query;
+      const { data, error } = await conversationsManager.getConversations(userId);
+      if (error) {
+        reply.status(500).send({ error: error.message });
+        return;
+      }
+      reply.send(data);
+    },
+  },
+  {
+    method: "DELETE",
+    url: "/conversations/:conversationId",
+    schema: {
+      description: "Delete a conversation and all its messages",
+      params: {
+        type: "object",
+        required: ["conversationId"],
+        properties: {
+          conversationId: { type: "string", format: "uuid" },
+        },
+      },
+      response: {
+        204: {
+          description: "Conversation deleted successfully",
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const { conversationId } = request.params;
+      const { error } = await conversationsManager.deleteConversation(conversationId);
+      if (error) {
+        reply.status(500).send({ error: error.message });
+        return;
+      }
+      reply.status(204).send();
+    },
+  },
 ];
 
 memoryRoute.addRoutes(...routes);

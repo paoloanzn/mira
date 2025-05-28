@@ -12,6 +12,7 @@ import Route from "../../../lib/routes/route.js";
 import { AgentLoop } from "../../lib/loop/agent-loop.js";
 import { getEmbeddingManager } from "../../lib/ai/embedding.js";
 import { logger } from "../../../lib/logger/logger.js";
+import { CustomBaseError, ErrorType } from "../errors/errors.js";
 
 /**
  * Message route handler class
@@ -31,47 +32,131 @@ class MessageRoute extends Route {
    * @private
    */
   setupRoutes() {
-    this.addRoutes({
-      method: "POST",
-      url: "/message",
-      schema: {
-        description: "Send a message to the agent",
-        body: {
-          type: "object",
-          required: ["content"],
-          properties: {
-            content: { type: "string" },
+    this.addRoutes(
+      {
+        method: "GET",
+        url: "/conversations/:conversationId/messages",
+        schema: {
+          description: "Get messages for a conversation",
+          params: {
+            type: "object",
+            required: ["conversationId"],
+            properties: {
+              conversationId: { type: "string" },
+            },
+          },
+          response: {
+            200: {
+              description: "Messages retrieved successfully",
+              type: "object",
+              properties: {
+                messages: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      id: { type: "string" },
+                      userId: { type: "string" },
+                      content: { type: "string" },
+                      created_at: { type: "string" },
+                    },
+                  },
+                },
+              },
+            },
+            500: {
+              description: "Internal server error",
+              type: "object",
+              properties: {
+                status: { type: "string" },
+                message: { type: "string" },
+              },
+            },
           },
         },
-        response: {
-          200: {
-            description: "Message processed successfully",
-            type: "object",
-            properties: {
-              status: { type: "string" },
-              data: { type: "object" },
-            },
-          },
-          400: {
-            description: "Bad request",
-            type: "object",
-            properties: {
-              status: { type: "string" },
-              message: { type: "string" },
-            },
-          },
-          500: {
-            description: "Internal server error",
-            type: "object",
-            properties: {
-              status: { type: "string" },
-              message: { type: "string" },
-            },
-          },
-        },
+        handler: this.handleGetMessages.bind(this),
       },
-      handler: this.handleMessage.bind(this),
-    });
+      {
+        method: "POST",
+        url: "/conversations/:conversationId/messages",
+        schema: {
+          description: "Send a message to the agent",
+          params: {
+            type: "object",
+            required: ["conversationId"],
+            properties: {
+              conversationId: { type: "string" },
+            },
+          },
+          body: {
+            type: "object",
+            required: ["content"],
+            properties: {
+              content: { type: "string" },
+            },
+          },
+          response: {
+            200: {
+              description: "Message processed successfully",
+              type: "object",
+              properties: {
+                status: { type: "string" },
+                data: { type: "object" },
+              },
+            },
+            400: {
+              description: "Bad request",
+              type: "object",
+              properties: {
+                status: { type: "string" },
+                message: { type: "string" },
+              },
+            },
+            500: {
+              description: "Internal server error",
+              type: "object",
+              properties: {
+                status: { type: "string" },
+                message: { type: "string" },
+              },
+            },
+          },
+        },
+        handler: this.handleMessage.bind(this),
+      }
+    );
+  }
+
+  /**
+   * Handle get messages request
+   * @private
+   * @param {FastifyRequest} request - Fastify request object
+   * @param {FastifyReply} reply - Fastify reply object
+   */
+  async handleGetMessages(request, reply) {
+    try {
+      const { conversationId } = request.params;
+      const { data: messages, error } = await this.memoryClient.getMessages(conversationId);
+
+      if (error) {
+        throw new CustomBaseError(
+          `Failed to get messages: ${error.message}`,
+          ErrorType.BUSINESS_LOGIC,
+          error
+        );
+      }
+
+      return { messages };
+    } catch (error) {
+      if (error instanceof CustomBaseError) {
+        throw error;
+      }
+      throw new CustomBaseError(
+        "Failed to get messages",
+        ErrorType.UNKNOWN,
+        error
+      );
+    }
   }
 
   /**
@@ -91,7 +176,11 @@ class MessageRoute extends Route {
         const { data: messages, error: historyError } =
           await this.memoryClient.getMessages(conversationId);
         if (historyError) {
-          throw new Error(`Failed to get messages: ${historyError.message}`);
+          throw new CustomBaseError(
+            `Failed to get messages: ${historyError.message}`,
+            ErrorType.BUSINESS_LOGIC,
+            historyError
+          );
         }
 
         const { data: similarMessages, error: similaritySearchError } =
@@ -100,8 +189,10 @@ class MessageRoute extends Route {
             limit: 5,
           });
         if (similaritySearchError) {
-          throw new Error(
+          throw new CustomBaseError(
             `Failed to get similarity search results from messages: ${similaritySearchError.message}`,
+            ErrorType.BUSINESS_LOGIC,
+            similaritySearchError
           );
         }
 
@@ -125,7 +216,10 @@ class MessageRoute extends Route {
         logger.debug(template);
 
         if (templateError) {
-          throw new Error(`Template compilation failed: ${templateError}`);
+          throw new CustomBaseError(
+            `Template compilation failed: ${templateError}`,
+            ErrorType.BUSINESS_LOGIC
+          );
         }
 
         // Generate AI response
@@ -164,7 +258,11 @@ class MessageRoute extends Route {
         );
 
         if (generateError) {
-          throw new Error(`Text generation failed: ${generateError}`);
+          throw new CustomBaseError(
+            `Text generation failed: ${generateError}`,
+            ErrorType.BUSINESS_LOGIC,
+            generateError
+          );
         }
 
         return aiResponse.trim();
@@ -185,7 +283,11 @@ class MessageRoute extends Route {
           agentEmbedding,
         );
         if (saveError) {
-          throw new Error(`Failed to save AI response: ${saveError.message}`);
+          throw new CustomBaseError(
+            `Failed to save AI response: ${saveError.message}`,
+            ErrorType.BUSINESS_LOGIC,
+            saveError
+          );
         }
       },
       async (state) => {
@@ -209,14 +311,14 @@ class MessageRoute extends Route {
    */
   async handleMessage(request, reply) {
     const { content } = request.body;
+    const { conversationId } = request.params;
     const hostname = request.hostname;
 
     if (!content) {
-      reply.status(400).send({
-        status: "error",
-        message: "Missing content",
-      });
-      return;
+      throw new CustomBaseError(
+        "Missing content",
+        ErrorType.VALIDATION
+      );
     }
 
     // Set SSE headers for streaming
@@ -233,18 +335,10 @@ class MessageRoute extends Route {
       const { userId, error: userError } =
         await this.memoryClient.getOrCreateUser(hostname);
       if (userError) {
-        throw new Error(`Failed to get/create user: ${userError.message}`);
-      }
-
-      // Get or create conversation for this user
-      const { conversationId, error: convError } =
-        await this.memoryClient.getOrCreateConversation(
-          userId,
-          this.agentUserId,
-        );
-      if (convError) {
-        throw new Error(
-          `Failed to get/create conversation: ${convError.message}`,
+        throw new CustomBaseError(
+          `Failed to get/create user: ${userError.message}`,
+          ErrorType.BUSINESS_LOGIC,
+          userError
         );
       }
 
@@ -260,7 +354,11 @@ class MessageRoute extends Route {
         userEmbedding,
       );
       if (msgError) {
-        throw new Error(`Failed to create message: ${msgError.message}`);
+        throw new CustomBaseError(
+          `Failed to create message: ${msgError.message}`,
+          ErrorType.BUSINESS_LOGIC,
+          msgError
+        );
       }
 
       // Create and execute agent loop
@@ -276,7 +374,7 @@ class MessageRoute extends Route {
       if (!responseStream.writableEnded) {
         responseStream.write(
           `event: error\ndata: ${JSON.stringify({
-            message: "Internal server error",
+            message: error instanceof CustomBaseError ? error.message : "Internal server error",
           })}\n\n`,
         );
       }

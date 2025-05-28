@@ -152,35 +152,12 @@ class MemoryClient {
   }
 
   /**
-   * Gets or creates a conversation for a user with the agent.
-   * @param {string} userId - The user's ID
-   * @param {string} agentUserId - The agent's user ID
-   * @returns {Promise<{conversationId: string|null, error: Error|null}>}
+   * Gets all conversations for a user.
+   * @param {string} userId - The user ID to get conversations for
+   * @returns {Promise<{data: Array|null, error: Error|null}>}
    */
-  async getOrCreateConversation(userId, agentUserId) {
-    try {
-      // Check if we already have a conversation for this user
-      let conversationId = this.conversationMap.get(userId);
-      if (conversationId) {
-        return { conversationId, error: null };
-      }
-
-      // Create new conversation with user and agent
-      const { data, error } = await this.createConversation([
-        userId,
-        agentUserId,
-      ]);
-      if (error) throw error;
-
-      conversationId = data.id;
-      this.conversationMap.set(userId, conversationId);
-      return { conversationId, error: null };
-    } catch (error) {
-      return {
-        conversationId: null,
-        error: new Error(`Failed to get/create conversation: ${error.message}`),
-      };
-    }
+  async getConversations(userId) {
+    return this._request("/conversations", "GET", null, { userId });
   }
 
   /**
@@ -190,6 +167,15 @@ class MemoryClient {
    */
   async createConversation(userIds) {
     return this._request("/conversations", "POST", { userIds });
+  }
+
+  /**
+   * Deletes a conversation and all its related data.
+   * @param {string} conversationId - The ID of the conversation to delete
+   * @returns {Promise<{data: null, error: Error|null}>}
+   */
+  async deleteConversation(conversationId) {
+    return this._request(`/conversations/${conversationId}`, "DELETE");
   }
 
   /**

@@ -40,6 +40,8 @@ class Database {
           "get_messages.sql",
           "get_messages_by_embedding.sql",
           "update_message_embedding.sql",
+          "get_conversations.sql",
+          "delete_conversation.sql"
         ],
       });
     }
