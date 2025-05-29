@@ -56,7 +56,7 @@ class MessageRoute extends Route {
                     type: "object",
                     properties: {
                       id: { type: "string" },
-                      userId: { type: "string" },
+                      user_id: { type: "string" },
                       content: { type: "string" },
                       created_at: { type: "string" },
                     },
@@ -311,6 +311,7 @@ class MessageRoute extends Route {
    * @param {FastifyReply} reply - Fastify reply object
    */
   async handleMessage(request, reply) {
+    logger.info(`INCOMING MESSAGE REQUEST:\n ${JSON.stringify(request, 2, null)}`)
     const { content } = request.body;
     const { conversationId } = request.params;
     const hostname = request.hostname;
